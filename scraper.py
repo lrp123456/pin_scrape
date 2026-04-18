@@ -294,7 +294,7 @@ class PinterestScraper:
                 print(f"登录检测出错: {e}")
 
     def _ensure_and_click_pin(self, clicked_pins, keyword):
-        visible_pins = self._get_visible_pin_elements()
+        visible_pins = self._get_visible_pin_elements(self.media_type)
         if not visible_pins:
             return False
         unclicked = [p for p in visible_pins if p["id"] not in clicked_pins]
@@ -1035,12 +1035,16 @@ class PinterestScraper:
         time.sleep(random.uniform(2, 4))
 
 
-    def _get_visible_pin_elements(self) -> list:
-        """获取当前视口内可见的 pin 元素"""
+    def _get_visible_pin_elements(self, media_type: str = "all") -> list:
+        """获取当前视口内可见的 pin 元素
+        
+        Args:
+            media_type: 媒体类型筛选 all/images/videos
+        """
         try:
             # 使用 JavaScript 查找视口内的 pin 链接
             visible_pins = self.page.evaluate("""
-                () => {
+                (mediaType) => {
                     const pins = [];
                     const processedIds = new Set();
 
@@ -1066,10 +1070,28 @@ class PinterestScraper:
                             );
 
                             if (inViewport) {
+                                // 媒体类型检测
+                                let isVideo = false;
+                                const imgElement = link.querySelector('img');
+                                if (imgElement) {
+                                    const src = imgElement.src || '';
+                                    const alt = imgElement.alt || '';
+                                    // Pinterest 视频通常有特定标识
+                                    isVideo = src.includes('/video/') || 
+                                              src.includes('video') || 
+                                              alt.includes('video') ||
+                                              link.querySelector('[data-test-id="video-pin"]') !== null;
+                                }
+                                
+                                // 根据媒体类型过滤
+                                if (mediaType === 'images' && isVideo) return;
+                                if (mediaType === 'video' && !isVideo) return;
+
                                 processedIds.add(pinId);
                                 pins.push({
                                     id: pinId,
-                                    element: link
+                                    element: link,
+                                    is_video: isVideo
                                 });
                             }
                         } catch (e) {
@@ -1079,18 +1101,17 @@ class PinterestScraper:
 
                     return pins;
                 }
-            """)
+            """, media_type)
 
             if self.debug:
-                print(f"发现 {len(visible_pins)} 个可见 pin")
+                print(f"发现 {len(visible_pins)} 个可见 pin (媒体类型：{media_type})")
 
             return visible_pins
 
         except Exception as e:
             if self.debug:
-                print(f"获取可见 pin 失败: {e}")
+                print(f"获取可见 pin 失败：{e}")
             return []
-
     def _close_pin_modal(self):
         """关闭 pin 详情模态框"""
         try:
