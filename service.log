@@ -1,0 +1,498 @@
+2026-04-16 18:27:45,734 - INFO - Service starting up
+2026-04-16 18:27:56,216 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:29:59,579 - INFO - Service starting up
+2026-04-16 18:30:04,598 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:34:10,402 - INFO - Service starting up
+2026-04-16 18:34:17,982 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:36:49,883 - ERROR - Scrape failed: 
+2026-04-16 18:37:38,225 - INFO - Service starting up
+2026-04-16 18:37:59,604 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:37:59,604 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:37:59,658 - INFO - Scrape stdout: empty
+2026-04-16 18:37:59,658 - INFO - Scrape stderr: Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:37:59,658 - ERROR - Scrape failed (exit 1): Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:00,734 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:38:00,735 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:38:00,778 - INFO - Scrape stdout: empty
+2026-04-16 18:38:00,778 - INFO - Scrape stderr: Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:00,778 - ERROR - Scrape failed (exit 1): Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:30,152 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:38:30,153 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:38:30,197 - INFO - Scrape stdout: empty
+2026-04-16 18:38:30,197 - INFO - Scrape stderr: Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:30,197 - ERROR - Scrape failed (exit 1): Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:30,997 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:38:30,997 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:38:31,046 - INFO - Scrape stdout: empty
+2026-04-16 18:38:31,046 - INFO - Scrape stderr: Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:31,046 - ERROR - Scrape failed (exit 1): Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 7, in <module>
+    from scraper import PinterestScraper
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 10, in <module>
+    from playwright.sync_api import sync_playwright, Page, Browser, BrowserContext
+ModuleNotFoundError: No module named 'playwright'
+
+2026-04-16 18:38:55,907 - INFO - Service shutting down
+2026-04-16 18:39:10,894 - INFO - Service starting up
+2026-04-16 18:39:18,092 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:39:18,092 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:39:18,245 - INFO - Scrape stdout: empty
+2026-04-16 18:39:18,245 - INFO - Scrape stderr: Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 8, in <module>
+    from downloader import ImageDownloader
+  File "C:\Users\王\Desktop\pinterest-scraper\downloader.py", line 4, in <module>
+    import aiohttp
+ModuleNotFoundError: No module named 'aiohttp'
+
+2026-04-16 18:39:18,245 - ERROR - Scrape failed (exit 1): Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 8, in <module>
+    from downloader import ImageDownloader
+  File "C:\Users\王\Desktop\pinterest-scraper\downloader.py", line 4, in <module>
+    import aiohttp
+ModuleNotFoundError: No module named 'aiohttp'
+
+2026-04-16 18:39:42,897 - INFO - Service shutting down
+2026-04-16 18:40:25,015 - INFO - Service starting up
+2026-04-16 18:40:28,156 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:40:28,156 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:40:29,250 - INFO - Scrape stdout: 搜索关键词: 简约风格
+最大爬取数量: 50
+筛选条件: saves >= 100, likes >= 50, comments >= 10
+输出目录: C:\Users\王\Desktop\pinterest-scraper\output
+--------------------------------------------------
+CDP 端点: http://localhost:9222
+正在连接到已有浏览器: http://localhost:9222
+连接失败: BrowserType.connect_over_cdp: connect ECONNREFUSED ::1:9222
+Call log:
+  - <ws preparing> retrieving websocket url from http://localhost:9222
+
+请确保 Chrome 已以调试模式启动:
+  chrome.exe --remote-debugging-port=9222
+
+2026-04-16 18:40:29,250 - INFO - Scrape stderr: on.py", line 83, in send_return_as_dict
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.connect_over_cdp: connect ECONNREFUSED ::1:9222
+Call log:
+  - <ws preparing> retrieving websocket url from http://localhost:9222
+
+
+2026-04-16 18:40:29,251 - ERROR - Scrape failed (exit 1): (node:28464) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 143, in main
+    with PinterestScraper(
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 57, in __enter__
+    self.start()
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 71, in start
+    self.browser = self._playwright.chromium.connect_over_cdp(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\sync_api\_generated.py", line 14969, in connect_over_cdp
+    self._sync(
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_browser_type.py", line 206, in connect_over_cdp
+    response = await self._channel.send_return_as_dict(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_connection.py", line 83, in send_return_as_dict
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.connect_over_cdp: connect ECONNREFUSED ::1:9222
+Call log:
+  - <ws preparing> retrieving websocket url from http://localhost:9222
+
+
+2026-04-16 18:41:19,850 - INFO - Service shutting down
+2026-04-16 18:41:21,105 - INFO - Service starting up
+2026-04-16 18:41:24,251 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:41:24,251 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:41:24,997 - INFO - Scrape stdout: 搜索关键词: 简约风格
+最大爬取数量: 50
+筛选条件: saves >= 100, likes >= 50, comments >= 10
+输出目录: C:\Users\王\Desktop\pinterest-scraper\output
+--------------------------------------------------
+CDP 端点: http://127.0.0.1:9222
+正在连接到已有浏览器: http://127.0.0.1:9222
+连接失败: BrowserType.connect_over_cdp: connect ECONNREFUSED 127.0.0.1:9222
+Call log:
+  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222
+
+请确保 Chrome 已以调试模式启动:
+  chrome.exe --remote-debugging-port=9222
+
+2026-04-16 18:41:24,998 - INFO - Scrape stderr: , line 83, in send_return_as_dict
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.connect_over_cdp: connect ECONNREFUSED 127.0.0.1:9222
+Call log:
+  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222
+
+
+2026-04-16 18:41:24,998 - ERROR - Scrape failed (exit 1): (node:4772) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 143, in main
+    with PinterestScraper(
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 57, in __enter__
+    self.start()
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 71, in start
+    self.browser = self._playwright.chromium.connect_over_cdp(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\sync_api\_generated.py", line 14969, in connect_over_cdp
+    self._sync(
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_sync_base.py", line 115, in _sync
+    return task.result()
+           ^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_browser_type.py", line 206, in connect_over_cdp
+    response = await self._channel.send_return_as_dict(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_connection.py", line 83, in send_return_as_dict
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\conda\envs\pinterest\Lib\site-packages\playwright\_impl\_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.connect_over_cdp: connect ECONNREFUSED 127.0.0.1:9222
+Call log:
+  - <ws preparing> retrieving websocket url from http://127.0.0.1:9222
+
+
+2026-04-16 18:43:35,193 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:43:35,194 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:44:00,634 - INFO - Scrape stdout: //127.0.0.1:9222
+正在连接到已有浏览器: http://127.0.0.1:9222
+成功连接到已有浏览器
+使用现有页面: chrome://new-tab-page/
+已启用 stealth 模式 (连接模式)
+正在访问: https://kr.pinterest.com/search/pins/?q=%E7%AE%80%E7%BA%A6%E9%A3%8E%E6%A0%BC
+页面加载警告: Page.goto: net::ERR_CONNECTION_TIMED_OUT at https://kr.pinterest.com/search/pins/?q=%E7%AE%80%E7%BA%A6%E9%A3%8E%E6%A0%BC
+Call log:
+  - navigating to "https://kr.pinterest.com/search/pins/?q=%E7%AE%80%E7%BA%A6%E9%A3%8E%E6%A0%BC", waiting until "domcontentloaded"
+
+等待页面加载 (6.0秒)...
+保持浏览器运行（连接模式）
+
+2026-04-16 18:44:00,634 - INFO - Scrape stderr: 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 146, in main
+    pins = scraper.search(args.query, args.max_pins)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 168, in search
+    time.sleep(wait_time)
+KeyboardInterrupt
+
+2026-04-16 18:44:00,635 - ERROR - Scrape failed (exit 3221225786): (node:15640) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 146, in main
+    pins = scraper.search(args.query, args.max_pins)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 168, in search
+    time.sleep(wait_time)
+KeyboardInterrupt
+
+2026-04-16 18:44:00,726 - INFO - Service shutting down
+2026-04-16 18:44:03,281 - INFO - Service starting up
+2026-04-16 18:44:06,796 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:44:06,797 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:45:10,255 - INFO - Scrape stdout: 收集 48/50 个主 Pin，总计 48 个...
+已收集 49/50 个主 Pin，总计 49 个...
+已收集 50/50 个主 Pin，总计 50 个...
+搜索页面收集完成
+主 Pin: 50 个
+相似推荐: 0 个
+总计: 50 个
+保持浏览器运行（连接模式）
+数据已保存到: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选结果: 0/50 个 Pin 符合条件
+没有符合条件的 Pin，跳过下载
+--------------------------------------------------
+爬取完成!
+总数据: 50 条
+筛选后: 0 条
+数据文件: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选数据: C:\Users\王\Desktop\pinterest-scraper\output\filtered_data.json
+图片目录: C:\Users\王\Desktop\pinterest-scraper\output\images
+
+2026-04-16 18:45:10,255 - INFO - Scrape stderr: (node:28428) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-04-16 18:45:10,256 - INFO - Returning raw data: 50 pins
+2026-04-16 18:45:13,668 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:45:13,668 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:46:15,334 - INFO - Scrape stdout: 收集 48/50 个主 Pin，总计 48 个...
+已收集 49/50 个主 Pin，总计 49 个...
+已收集 50/50 个主 Pin，总计 50 个...
+搜索页面收集完成
+主 Pin: 50 个
+相似推荐: 0 个
+总计: 50 个
+保持浏览器运行（连接模式）
+数据已保存到: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选结果: 0/50 个 Pin 符合条件
+没有符合条件的 Pin，跳过下载
+--------------------------------------------------
+爬取完成!
+总数据: 50 条
+筛选后: 0 条
+数据文件: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选数据: C:\Users\王\Desktop\pinterest-scraper\output\filtered_data.json
+图片目录: C:\Users\王\Desktop\pinterest-scraper\output\images
+
+2026-04-16 18:46:15,334 - INFO - Scrape stderr: (node:16032) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-04-16 18:46:15,334 - INFO - Returning raw data: 50 pins
+2026-04-16 18:47:49,394 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:47:49,394 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:47:56,607 - INFO - Scrape stdout: 
+     # 在容器外运行（需要 GUI）
+     docker exec -it n8n-python-runner bash
+     google-chrome --user-data-dir=/home/node/.chrome-profile --remote-debugging-port=9222
+     # 在打开的浏览器中登录 Pinterest
+     # 登录后关闭浏览器
+
+  3. 后续运行使用已登录配置：
+     python main.py -q '关键词' -n 100 --connect --auto-launch \
+       --chrome-profile /home/node/.chrome-profile
+
+方案 2: 连接到已登录的浏览器（需要手动启动）
+  1. 在宿主机手动启动 Chrome（已登录 Pinterest）
+  2. 使用 --connect 参数连接到该浏览器
+============================================================
+
+保持浏览器运行（连接模式）
+
+2026-04-16 18:47:56,607 - INFO - Scrape stderr: \main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 146, in main
+    pins = scraper.search(args.query, args.max_pins)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 171, in search
+    self._check_login_required()
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 229, in _check_login_required
+    raise RuntimeError(
+RuntimeError: 需要 Pinterest 登录才能继续。请按照上述方案配置登录状态。
+
+2026-04-16 18:47:56,607 - ERROR - Scrape failed (exit 1): (node:10368) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 146, in main
+    pins = scraper.search(args.query, args.max_pins)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 171, in search
+    self._check_login_required()
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 229, in _check_login_required
+    raise RuntimeError(
+RuntimeError: 需要 Pinterest 登录才能继续。请按照上述方案配置登录状态。
+
+2026-04-16 18:48:04,625 - INFO - Starting scrape: query=简约风格, max_pins=50
+2026-04-16 18:48:04,625 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 50 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 18:48:11,648 - INFO - Scrape stdout: 
+     # 在容器外运行（需要 GUI）
+     docker exec -it n8n-python-runner bash
+     google-chrome --user-data-dir=/home/node/.chrome-profile --remote-debugging-port=9222
+     # 在打开的浏览器中登录 Pinterest
+     # 登录后关闭浏览器
+
+  3. 后续运行使用已登录配置：
+     python main.py -q '关键词' -n 100 --connect --auto-launch \
+       --chrome-profile /home/node/.chrome-profile
+
+方案 2: 连接到已登录的浏览器（需要手动启动）
+  1. 在宿主机手动启动 Chrome（已登录 Pinterest）
+  2. 使用 --connect 参数连接到该浏览器
+============================================================
+
+保持浏览器运行（连接模式）
+
+2026-04-16 18:48:11,648 - INFO - Scrape stderr: \main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 146, in main
+    pins = scraper.search(args.query, args.max_pins)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 171, in search
+    self._check_login_required()
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 229, in _check_login_required
+    raise RuntimeError(
+RuntimeError: 需要 Pinterest 登录才能继续。请按照上述方案配置登录状态。
+
+2026-04-16 18:48:11,648 - ERROR - Scrape failed (exit 1): (node:21488) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Traceback (most recent call last):
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 188, in <module>
+    main()
+  File "C:\Users\王\Desktop\pinterest-scraper\main.py", line 146, in main
+    pins = scraper.search(args.query, args.max_pins)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 171, in search
+    self._check_login_required()
+  File "C:\Users\王\Desktop\pinterest-scraper\scraper.py", line 229, in _check_login_required
+    raise RuntimeError(
+RuntimeError: 需要 Pinterest 登录才能继续。请按照上述方案配置登录状态。
+
+2026-04-16 18:59:06,291 - INFO - Starting scrape: query=现代简约, max_pins=50
+2026-04-16 18:59:06,291 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 现代简约 --max-pins 50 --min-saves 50 --min-likes 10 --min-comments 0 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 19:00:30,876 - INFO - Scrape stdout: 收集 48/50 个主 Pin，总计 48 个...
+已收集 49/50 个主 Pin，总计 49 个...
+已收集 50/50 个主 Pin，总计 50 个...
+搜索页面收集完成
+主 Pin: 50 个
+相似推荐: 0 个
+总计: 50 个
+保持浏览器运行（连接模式）
+数据已保存到: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选结果: 0/50 个 Pin 符合条件
+没有符合条件的 Pin，跳过下载
+--------------------------------------------------
+爬取完成!
+总数据: 50 条
+筛选后: 0 条
+数据文件: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选数据: C:\Users\王\Desktop\pinterest-scraper\output\filtered_data.json
+图片目录: C:\Users\王\Desktop\pinterest-scraper\output\images
+
+2026-04-16 19:00:30,878 - INFO - Scrape stderr: (node:13668) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-04-16 19:00:30,878 - INFO - Returning raw data: 50 pins
+2026-04-16 19:06:11,543 - INFO - Service shutting down
+2026-04-16 19:06:12,882 - INFO - Service starting up
+2026-04-16 19:06:25,891 - INFO - Starting scrape: query=现代简约, max_pins=3
+2026-04-16 19:06:25,893 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 现代简约 --max-pins 3 --min-saves 50 --min-likes 10 --min-comments 0 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --debug --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 19:06:57,535 - INFO - Scrape stdout: 取到 24 个 Pin
+已收集 1/3 个主 Pin，总计 1 个...
+已收集 2/3 个主 Pin，总计 2 个...
+已收集 3/3 个主 Pin，总计 3 个...
+搜索页面收集完成
+主 Pin: 3 个
+相似推荐: 0 个
+总计: 3 个
+保持浏览器运行（连接模式）
+数据已保存到: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选结果: 0/3 个 Pin 符合条件
+没有符合条件的 Pin，跳过下载
+--------------------------------------------------
+爬取完成!
+总数据: 3 条
+筛选后: 0 条
+数据文件: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选数据: C:\Users\王\Desktop\pinterest-scraper\output\filtered_data.json
+图片目录: C:\Users\王\Desktop\pinterest-scraper\output\images
+
+2026-04-16 19:06:57,535 - INFO - Scrape stderr: (node:30908) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-04-16 19:06:57,536 - INFO - Returning raw data: 3 pins
+2026-04-16 19:08:25,029 - INFO - Service shutting down
+2026-04-16 19:08:26,844 - INFO - Service starting up
+2026-04-16 19:08:42,729 - INFO - Starting scrape: query=简约风格, max_pins=5
+2026-04-16 19:08:42,729 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 5 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --debug --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 19:09:20,649 - INFO - Scrape stdout: n，总计 2 个...
+已收集 3/5 个主 Pin，总计 3 个...
+已收集 4/5 个主 Pin，总计 4 个...
+已收集 5/5 个主 Pin，总计 5 个...
+搜索页面收集完成
+主 Pin: 5 个
+相似推荐: 0 个
+总计: 5 个
+保持浏览器运行（连接模式）
+数据已保存到: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选结果: 0/5 个 Pin 符合条件
+没有符合条件的 Pin，跳过下载
+--------------------------------------------------
+爬取完成!
+总数据: 5 条
+筛选后: 0 条
+数据文件: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选数据: C:\Users\王\Desktop\pinterest-scraper\output\filtered_data.json
+图片目录: C:\Users\王\Desktop\pinterest-scraper\output\images
+
+2026-04-16 19:09:20,649 - INFO - Scrape stderr: (node:28496) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-04-16 19:09:20,650 - INFO - Returning raw data: 5 pins
+2026-04-16 19:13:11,923 - INFO - Service shutting down
+2026-04-16 19:13:13,172 - INFO - Service starting up
+2026-04-16 19:13:19,875 - INFO - Starting scrape: query=简约风格, max_pins=5
+2026-04-16 19:13:19,875 - INFO - Running: C:\conda\envs\pinterest\python.exe C:\Users\王\Desktop\pinterest-scraper\main.py --query 简约风格 --max-pins 5 --min-saves 100 --min-likes 50 --min-comments 10 --connect --no-headless --cdp-endpoint http://127.0.0.1:9222 --debug --output C:\Users\王\Desktop\pinterest-scraper\output
+2026-04-16 19:14:26,329 - INFO - Scrape stdout: n/318700111143435691/
+    无法获取详情
+  [5/5] 获取详情: 其中包括图片：
+  正在获取详情: https://kr.pinterest.com/pin/375276581464075555/
+    无法获取详情
+保持浏览器运行（连接模式）
+数据已保存到: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选结果: 0/5 个 Pin 符合条件
+没有符合条件的 Pin，跳过下载
+--------------------------------------------------
+爬取完成!
+总数据: 5 条
+筛选后: 0 条
+数据文件: C:\Users\王\Desktop\pinterest-scraper\output\data.json
+筛选数据: C:\Users\王\Desktop\pinterest-scraper\output\filtered_data.json
+图片目录: C:\Users\王\Desktop\pinterest-scraper\output\images
+
+2026-04-16 19:14:26,329 - INFO - Scrape stderr: (node:28428) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+2026-04-16 19:14:26,330 - INFO - Returning raw data: 5 pins

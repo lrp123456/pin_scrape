@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-18T16:24:22.364460",
+  "build_status": "unknown",
+  "syntax_check": {
+    "scraper.py": true,
+    "main.py": true,
+    "downloader.py": true,
+    "shared/models.py": true,
+    "api_service_enhanced/task_manager.py": true,
+    "shared/config_schema.py": true,
+    "tray_app/console_gui.py": true,
+    "tray_app/tray_icon.py": true
+  },
+  "import_tests": {
+    "PinterestScraper": true,
+    "ImageDownloader": true,
+    "Pin": true,
+    "TaskManager": true,
+    "ScraperConsole": true,
+    "TrayIconManager": false
+  },
+  "media_type_tests": {
+    "all": true
+  },
+  "errors": [
+    "导入失败: TrayIconManager - No module named 'pystray'"
+  ],
+  "debug_mode": "skipped",
+  "build_ok": false,
+  "media_type_ok": true,
+  "all_passed": false
+}

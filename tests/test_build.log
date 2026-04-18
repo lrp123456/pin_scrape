@@ -1,0 +1,1454 @@
+2026-04-18 14:38:16,614 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:38:16,614 [INFO] ============================================================
+2026-04-18 14:38:16,614 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:38:16,614 [INFO] 测试媒体类型: all
+2026-04-18 14:38:16,615 [INFO] ============================================================
+2026-04-18 14:38:16,615 [INFO] 开始语法检查...
+2026-04-18 14:38:16,615 [WARNING] 文件不存在: scraper.py
+2026-04-18 14:38:16,615 [WARNING] 文件不存在: main.py
+2026-04-18 14:38:16,615 [WARNING] 文件不存在: downloader.py
+2026-04-18 14:38:16,616 [WARNING] 文件不存在: shared/models.py
+2026-04-18 14:38:16,616 [WARNING] 文件不存在: api_service_enhanced/task_manager.py
+2026-04-18 14:38:16,616 [WARNING] 文件不存在: shared/config_schema.py
+2026-04-18 14:38:16,617 [WARNING] 文件不存在: tray_app/console_gui.py
+2026-04-18 14:38:16,617 [WARNING] 文件不存在: tray_app/tray_icon.py
+2026-04-18 14:38:16,617 [INFO] 开始导入测试...
+2026-04-18 14:38:16,630 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:38:16,630 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:38:16,643 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:38:16,643 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:38:16,655 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:38:16,655 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:38:16,668 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:38:16,668 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:38:16,680 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:38:16,680 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:38:16,696 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:38:16,696 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:38:16,710 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:38:16,711 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:38:16,711 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:38:16,744 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:38:16,744 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/tests/test_media_type_temp.py", line 10, in <module>
+    from scraper import PinterestScraper
+ModuleNotFoundError: No module named 'scraper'
+
+2026-04-18 14:38:16,745 [INFO] 测试Chrome调试模式...
+2026-04-18 14:38:17,138 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/tests/test_debug_temp.py", line 14, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:38:17,141 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/tests/test_results.json
+2026-04-18 14:38:30,607 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:38:30,609 [INFO] ============================================================
+2026-04-18 14:38:30,609 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:38:30,609 [INFO] 测试媒体类型: all
+2026-04-18 14:38:30,609 [INFO] ============================================================
+2026-04-18 14:38:30,609 [INFO] 开始语法检查...
+2026-04-18 14:38:30,658 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:38:30,696 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:38:30,733 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:38:30,773 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:38:30,815 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:38:30,856 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:38:30,901 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:38:30,943 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:38:30,943 [INFO] 开始导入测试...
+2026-04-18 14:38:30,956 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:38:30,956 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:38:30,970 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:38:30,970 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:38:30,983 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:38:30,984 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:38:30,999 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:38:30,999 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:38:31,014 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:38:31,015 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:38:31,029 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:38:31,029 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:38:31,046 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:38:31,046 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:38:31,047 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:38:31,240 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:38:31,241 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 16, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:38:31,241 [INFO] 测试Chrome调试模式...
+2026-04-18 14:38:31,699 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 14, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:38:31,701 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:38:48,565 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:38:48,567 [INFO] ============================================================
+2026-04-18 14:38:48,567 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:38:48,567 [INFO] 测试媒体类型: all
+2026-04-18 14:38:48,567 [INFO] ============================================================
+2026-04-18 14:38:48,567 [INFO] 开始语法检查...
+2026-04-18 14:38:48,614 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:38:48,654 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:38:48,694 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:38:48,739 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:38:48,780 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:38:48,818 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:38:48,859 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:38:48,896 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:38:48,897 [INFO] 开始导入测试...
+2026-04-18 14:38:48,911 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:38:48,911 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:38:48,923 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:38:48,923 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:38:48,935 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:38:48,936 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:38:48,948 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:38:48,949 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:38:48,964 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:38:48,964 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:38:48,978 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:38:48,978 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:38:48,991 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:38:48,991 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:38:48,992 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:38:49,164 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:38:49,165 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 16, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:38:49,166 [INFO] 测试Chrome调试模式...
+2026-04-18 14:38:49,555 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 14, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:38:49,559 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:39:00,176 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:39:00,177 [INFO] ============================================================
+2026-04-18 14:39:00,177 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:39:00,177 [INFO] 测试媒体类型: all
+2026-04-18 14:39:00,177 [INFO] ============================================================
+2026-04-18 14:39:00,177 [INFO] 开始语法检查...
+2026-04-18 14:39:00,226 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:39:00,266 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:39:00,306 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:39:00,344 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:39:00,392 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:39:00,434 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:39:00,479 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:39:00,526 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:39:00,526 [INFO] 开始导入测试...
+2026-04-18 14:39:00,540 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:39:00,540 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:39:00,553 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:39:00,554 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:39:00,567 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:39:00,568 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:39:00,581 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:39:00,581 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:39:00,594 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:39:00,594 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:39:00,609 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:39:00,609 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:39:00,623 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:39:00,623 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:39:00,623 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:39:00,814 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:39:00,814 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 16, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:39:00,815 [INFO] 测试Chrome调试模式...
+2026-04-18 14:39:01,214 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 14, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:39:01,216 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:39:31,862 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:39:31,863 [INFO] ============================================================
+2026-04-18 14:39:31,863 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:39:31,864 [INFO] 测试媒体类型: all
+2026-04-18 14:39:31,864 [INFO] ============================================================
+2026-04-18 14:39:31,864 [INFO] 开始语法检查...
+2026-04-18 14:39:31,919 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:39:31,960 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:39:32,001 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:39:32,046 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:39:32,092 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:39:32,134 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:39:32,180 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:39:32,226 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:39:32,226 [INFO] 开始导入测试...
+2026-04-18 14:39:32,240 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:39:32,240 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:39:32,254 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:39:32,254 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:39:32,268 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:39:32,268 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:39:32,283 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:39:32,283 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:39:32,300 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:39:32,300 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:39:32,314 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:39:32,314 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:39:32,329 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:39:32,329 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:39:32,329 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:39:32,525 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:39:32,526 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 16, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:39:32,527 [INFO] 测试Chrome调试模式...
+2026-04-18 14:39:32,972 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 14, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:39:32,975 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:40:00,661 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:40:00,662 [INFO] ============================================================
+2026-04-18 14:40:00,662 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:40:00,662 [INFO] 测试媒体类型: all
+2026-04-18 14:40:00,662 [INFO] ============================================================
+2026-04-18 14:40:00,662 [INFO] 开始语法检查...
+2026-04-18 14:40:00,711 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:40:00,750 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:40:00,790 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:40:00,828 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:40:00,869 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:40:00,907 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:40:00,950 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:40:00,992 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:40:00,992 [INFO] 开始导入测试...
+2026-04-18 14:40:01,003 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:40:01,004 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,017 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:40:01,017 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,029 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:40:01,030 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,043 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:40:01,043 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,054 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:40:01,055 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,067 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:40:01,067 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,081 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:40:01,081 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:01,082 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:40:01,275 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:40:01,275 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 16, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:40:01,276 [INFO] 测试Chrome调试模式...
+2026-04-18 14:40:01,687 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 14, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:40:01,690 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:40:33,144 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:40:33,146 [INFO] ============================================================
+2026-04-18 14:40:33,146 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:40:33,146 [INFO] 测试媒体类型: all
+2026-04-18 14:40:33,146 [INFO] ============================================================
+2026-04-18 14:40:33,146 [INFO] 开始语法检查...
+2026-04-18 14:40:33,200 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:40:33,242 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:40:33,283 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:40:33,323 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:40:33,370 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:40:33,412 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:40:33,459 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:40:33,504 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:40:33,505 [INFO] 开始导入测试...
+2026-04-18 14:40:33,518 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:40:33,519 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,531 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:40:33,531 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,542 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:40:33,543 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,554 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:40:33,554 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,566 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:40:33,566 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,577 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:40:33,577 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,593 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:40:33,593 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+NameError: name 'os' is not defined. Did you forget to import 'os'?
+
+2026-04-18 14:40:33,593 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:40:33,778 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:40:33,778 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 15, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:40:33,779 [INFO] 测试Chrome调试模式...
+2026-04-18 14:40:34,202 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 13, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:40:34,204 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:41:10,027 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:41:10,028 [INFO] ============================================================
+2026-04-18 14:41:10,028 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:41:10,028 [INFO] 测试媒体类型: all
+2026-04-18 14:41:10,029 [INFO] ============================================================
+2026-04-18 14:41:10,029 [INFO] 开始语法检查...
+2026-04-18 14:41:10,080 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:41:10,122 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:41:10,165 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:41:10,203 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:41:10,248 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:41:10,288 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:41:10,331 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:41:10,370 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:41:10,370 [INFO] 开始导入测试...
+2026-04-18 14:41:10,387 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:41:10,387 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:41:10,401 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:41:10,401 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:41:10,415 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:41:10,415 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:41:10,427 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:41:10,427 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:41:10,440 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:41:10,441 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:41:10,455 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:41:10,455 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:41:10,469 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:41:10,469 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:41:10,469 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:41:10,652 [ERROR] ✗ 媒体类型 'all' 测试失败
+2026-04-18 14:41:10,652 [ERROR]   错误: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_media_type_temp.py", line 11, in <module>
+    assert hasattr(scraper, 'media_type'), "scraper应有media_type属性"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: scraper应有media_type属性
+
+2026-04-18 14:41:10,653 [INFO] 测试Chrome调试模式...
+2026-04-18 14:41:11,059 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 13, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:41:11,065 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:41:31,311 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:41:31,312 [INFO] ============================================================
+2026-04-18 14:41:31,312 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:41:31,312 [INFO] 测试媒体类型: all
+2026-04-18 14:41:31,312 [INFO] ============================================================
+2026-04-18 14:41:31,313 [INFO] 开始语法检查...
+2026-04-18 14:41:31,370 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:41:31,410 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:41:31,449 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:41:31,492 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:41:31,537 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:41:31,581 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:41:31,627 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:41:31,671 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:41:31,671 [INFO] 开始导入测试...
+2026-04-18 14:41:31,685 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:41:31,686 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:41:31,702 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:41:31,702 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:41:31,718 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:41:31,719 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:41:31,732 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:41:31,732 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:41:31,747 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:41:31,748 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:41:31,762 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:41:31,762 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:41:31,776 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:41:31,777 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:41:31,777 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:41:31,971 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:41:31,972 [INFO] 测试Chrome调试模式...
+2026-04-18 14:41:32,409 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 13, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:41:32,411 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:41:47,254 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:41:47,256 [INFO] ============================================================
+2026-04-18 14:41:47,256 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:41:47,256 [INFO] 测试媒体类型: all
+2026-04-18 14:41:47,256 [INFO] ============================================================
+2026-04-18 14:41:47,256 [INFO] 开始语法检查...
+2026-04-18 14:41:47,313 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:41:47,357 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:41:47,401 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:41:47,443 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:41:47,487 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:41:47,527 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:41:47,572 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:41:47,614 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:41:47,615 [INFO] 开始导入测试...
+2026-04-18 14:41:47,629 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:41:47,629 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:41:47,643 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:41:47,643 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:41:47,658 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:41:47,658 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:41:47,672 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:41:47,673 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:41:47,691 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:41:47,691 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:41:47,706 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:41:47,706 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:41:47,722 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:41:47,722 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:41:47,723 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:41:47,916 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:41:47,917 [INFO] 测试Chrome调试模式...
+2026-04-18 14:41:48,354 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 13, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+TypeError: BrowserType.launch() got an unexpected keyword argument 'devtools'
+
+2026-04-18 14:41:48,357 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:42:02,338 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:42:02,340 [INFO] ============================================================
+2026-04-18 14:42:02,340 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:42:02,341 [INFO] 测试媒体类型: all
+2026-04-18 14:42:02,341 [INFO] ============================================================
+2026-04-18 14:42:02,341 [INFO] 开始语法检查...
+2026-04-18 14:42:02,391 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:42:02,430 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:42:02,470 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:42:02,510 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:42:02,556 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:42:02,598 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:42:02,643 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:42:02,685 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:42:02,685 [INFO] 开始导入测试...
+2026-04-18 14:42:02,699 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:42:02,700 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:42:02,714 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:42:02,715 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:42:02,729 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:42:02,729 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:42:02,744 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:42:02,744 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:42:02,757 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:42:02,757 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:42:02,770 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:42:02,770 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:42:02,785 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:42:02,786 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:42:02,786 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:42:02,965 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:42:02,966 [INFO] 测试Chrome调试模式...
+2026-04-18 14:42:03,408 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 13, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/sync_api/_generated.py", line 14566, in launch
+    self._sync(
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ^^^^^^^^^^^^^
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_browser_type.py", line 97, in launch
+    await self._channel.send(
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+
+2026-04-18 14:42:03,411 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:42:08,809 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:42:08,810 [INFO] ============================================================
+2026-04-18 14:42:08,810 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:42:08,810 [INFO] 测试媒体类型: all
+2026-04-18 14:42:08,810 [INFO] ============================================================
+2026-04-18 14:42:08,810 [INFO] 开始语法检查...
+2026-04-18 14:42:08,863 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:42:08,904 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:42:08,946 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:42:08,988 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:42:09,030 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:42:09,075 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:42:09,124 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:42:09,169 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:42:09,169 [INFO] 开始导入测试...
+2026-04-18 14:42:09,183 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:42:09,184 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:42:09,200 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:42:09,200 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:42:09,216 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:42:09,216 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:42:09,232 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:42:09,232 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:42:09,250 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:42:09,251 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:42:09,271 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:42:09,271 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:42:09,285 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:42:09,285 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:42:09,285 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:42:09,471 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:42:09,472 [INFO] 测试Chrome调试模式...
+2026-04-18 14:42:09,918 [ERROR] ✗ 调试模式测试失败: Traceback (most recent call last):
+  File "/mnt/c/Users/王/Desktop/pinterest-scraper/test_debug_temp.py", line 13, in <module>
+    browser = p.chromium.launch(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/sync_api/_generated.py", line 14566, in launch
+    self._sync(
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ^^^^^^^^^^^^^
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_browser_type.py", line 97, in launch
+    await self._channel.send(
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lrp/anaconda3/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+
+2026-04-18 14:42:09,923 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:42:29,299 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:42:29,300 [INFO] ============================================================
+2026-04-18 14:42:29,300 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:42:29,300 [INFO] 测试媒体类型: all
+2026-04-18 14:42:29,301 [INFO] ============================================================
+2026-04-18 14:42:29,301 [INFO] 开始语法检查...
+2026-04-18 14:42:29,355 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:42:29,395 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:42:29,435 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:42:29,474 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:42:29,517 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:42:29,565 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:42:29,619 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:42:29,667 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:42:29,668 [INFO] 开始导入测试...
+2026-04-18 14:42:29,682 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:42:29,683 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:42:29,698 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:42:29,698 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:42:29,712 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:42:29,713 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:42:29,728 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:42:29,728 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:42:29,743 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:42:29,743 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:42:29,758 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:42:29,758 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:42:29,772 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:42:29,772 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:42:29,773 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:42:29,949 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:42:29,955 [INFO] 测试Chrome调试模式...
+2026-04-18 14:42:30,327 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:42:30,329 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:42:36,112 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:42:36,113 [INFO] ============================================================
+2026-04-18 14:42:36,113 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:42:36,113 [INFO] 测试媒体类型: all
+2026-04-18 14:42:36,113 [INFO] ============================================================
+2026-04-18 14:42:36,114 [INFO] 开始语法检查...
+2026-04-18 14:42:36,168 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:42:36,213 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:42:36,259 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:42:36,303 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:42:36,351 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:42:36,391 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:42:36,446 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:42:36,498 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:42:36,499 [INFO] 开始导入测试...
+2026-04-18 14:42:36,516 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:42:36,517 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:42:36,531 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:42:36,531 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:42:36,546 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:42:36,546 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:42:36,561 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:42:36,562 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:42:36,576 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:42:36,577 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:42:36,600 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:42:36,600 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:42:36,615 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:42:36,616 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:42:36,616 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:42:36,803 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:42:36,805 [INFO] 测试Chrome调试模式...
+2026-04-18 14:42:37,209 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:42:37,212 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:42:42,511 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:42:42,513 [INFO] ============================================================
+2026-04-18 14:42:42,513 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:42:42,513 [INFO] 测试媒体类型: all
+2026-04-18 14:42:42,513 [INFO] ============================================================
+2026-04-18 14:42:42,513 [INFO] 开始语法检查...
+2026-04-18 14:42:42,565 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:42:42,609 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:42:42,647 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:42:42,688 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:42:42,731 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:42:42,773 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:42:42,819 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:42:42,864 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:42:42,864 [INFO] 开始导入测试...
+2026-04-18 14:42:42,878 [ERROR] ✗ 导入失败: from scraper import PinterestScraper
+2026-04-18 14:42:42,879 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'PinterestScraper'
+
+2026-04-18 14:42:42,894 [ERROR] ✗ 导入失败: from downloader import ImageDownloader
+2026-04-18 14:42:42,894 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ImageDownloader'
+
+2026-04-18 14:42:42,910 [ERROR] ✗ 导入失败: from shared.models import Pin
+2026-04-18 14:42:42,910 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'Pin'
+
+2026-04-18 14:42:42,926 [ERROR] ✗ 导入失败: from shared.config_manager import get_redis_client
+2026-04-18 14:42:42,926 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'get_redis_client'
+
+2026-04-18 14:42:42,942 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager
+2026-04-18 14:42:42,942 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TaskManager'
+
+2026-04-18 14:42:42,960 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole
+2026-04-18 14:42:42,961 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'ScraperConsole'
+
+2026-04-18 14:42:42,981 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager
+2026-04-18 14:42:42,981 [ERROR]   错误: Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'TrayIconManager'
+
+2026-04-18 14:42:42,981 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:42:43,161 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:42:43,162 [INFO] 测试Chrome调试模式...
+2026-04-18 14:42:43,519 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:42:43,522 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:45:42,700 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:45:42,701 [INFO] ============================================================
+2026-04-18 14:45:42,701 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:45:42,701 [INFO] 测试媒体类型: all
+2026-04-18 14:45:42,701 [INFO] ============================================================
+2026-04-18 14:45:42,701 [INFO] 开始语法检查...
+2026-04-18 14:45:42,756 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:45:42,796 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:45:42,836 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:45:42,878 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:45:42,922 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:45:42,962 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:45:43,005 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:45:43,048 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:45:43,048 [INFO] 开始导入测试...
+2026-04-18 14:45:43,048 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:45:43,049 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:45:43,049 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:45:43,049 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:45:43,050 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:45:43,050 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:45:57,967 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:45:57,969 [INFO] ============================================================
+2026-04-18 14:45:57,969 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:45:57,969 [INFO] 测试媒体类型: all
+2026-04-18 14:45:57,969 [INFO] ============================================================
+2026-04-18 14:45:57,969 [INFO] 开始语法检查...
+2026-04-18 14:45:58,023 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:45:58,061 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:45:58,097 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:45:58,141 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:45:58,187 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:45:58,230 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:45:58,274 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:45:58,315 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:45:58,316 [INFO] 开始导入测试...
+2026-04-18 14:45:58,316 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:45:58,317 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:45:58,317 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:45:58,317 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:45:58,318 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:45:58,318 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:46:20,308 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:46:20,309 [INFO] ============================================================
+2026-04-18 14:46:20,309 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:46:20,309 [INFO] 测试媒体类型: all
+2026-04-18 14:46:20,310 [INFO] ============================================================
+2026-04-18 14:46:20,310 [INFO] 开始语法检查...
+2026-04-18 14:46:20,365 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:46:20,402 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:46:20,445 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:46:20,488 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:46:20,530 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:46:20,575 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:46:20,622 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:46:20,664 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:46:20,664 [INFO] 开始导入测试...
+2026-04-18 14:46:20,665 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:46:20,665 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:46:20,665 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:46:20,665 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:46:20,666 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:46:20,666 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:46:20,666 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:46:20,852 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:46:20,853 [INFO] 测试Chrome调试模式...
+2026-04-18 14:46:21,197 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:46:21,199 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:46:28,807 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:46:28,808 [INFO] ============================================================
+2026-04-18 14:46:28,808 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:46:28,809 [INFO] 测试媒体类型: all
+2026-04-18 14:46:28,809 [INFO] ============================================================
+2026-04-18 14:46:28,809 [INFO] 开始语法检查...
+2026-04-18 14:46:28,863 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:46:28,906 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:46:28,947 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:46:28,989 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:46:29,035 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:46:29,078 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:46:29,127 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:46:29,168 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:46:29,168 [INFO] 开始导入测试...
+2026-04-18 14:46:29,169 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:46:29,169 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:46:29,169 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:46:29,169 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:46:29,170 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:46:29,170 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:46:29,170 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:46:29,343 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:46:29,344 [INFO] 测试Chrome调试模式...
+2026-04-18 14:46:29,692 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:46:29,694 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:47:27,890 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:47:27,891 [INFO] ============================================================
+2026-04-18 14:47:27,891 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:47:27,891 [INFO] 测试媒体类型: all
+2026-04-18 14:47:27,891 [INFO] ============================================================
+2026-04-18 14:47:27,891 [INFO] 开始语法检查...
+2026-04-18 14:47:27,944 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:47:27,989 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:47:28,031 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:47:28,073 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:47:28,116 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:47:28,154 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:47:28,195 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:47:28,234 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:47:28,235 [INFO] 开始导入测试...
+2026-04-18 14:47:28,235 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:47:28,236 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:47:28,236 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:47:28,237 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:47:28,239 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:47:28,239 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:47:28,239 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:47:28,413 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:47:28,414 [INFO] 测试Chrome调试模式...
+2026-04-18 14:47:28,753 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:47:28,755 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:47:34,586 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:47:34,587 [INFO] ============================================================
+2026-04-18 14:47:34,587 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:47:34,587 [INFO] 测试媒体类型: all
+2026-04-18 14:47:34,587 [INFO] ============================================================
+2026-04-18 14:47:34,587 [INFO] 开始语法检查...
+2026-04-18 14:47:34,635 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:47:34,673 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:47:34,712 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:47:34,752 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:47:34,790 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:47:34,830 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:47:34,872 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:47:34,915 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:47:34,915 [INFO] 开始导入测试...
+2026-04-18 14:47:34,916 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:47:34,916 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:47:34,916 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:47:34,917 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:47:34,917 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:47:34,918 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:47:34,918 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:47:35,096 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:47:35,097 [INFO] 测试Chrome调试模式...
+2026-04-18 14:47:35,427 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:47:35,428 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:47:41,150 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:47:41,151 [INFO] ============================================================
+2026-04-18 14:47:41,151 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:47:41,151 [INFO] 测试媒体类型: all
+2026-04-18 14:47:41,152 [INFO] ============================================================
+2026-04-18 14:47:41,152 [INFO] 开始语法检查...
+2026-04-18 14:47:41,201 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:47:41,235 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:47:41,272 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:47:41,310 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:47:41,355 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:47:41,398 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:47:41,441 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:47:41,482 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:47:41,483 [INFO] 开始导入测试...
+2026-04-18 14:47:41,483 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:47:41,483 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:47:41,484 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:47:41,484 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:47:41,484 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:47:41,485 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:47:41,485 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:47:41,660 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:47:41,661 [INFO] 测试Chrome调试模式...
+2026-04-18 14:47:42,008 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:47:42,010 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:47:54,959 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:47:54,960 [INFO] ============================================================
+2026-04-18 14:47:54,960 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:47:54,961 [INFO] 测试媒体类型: all
+2026-04-18 14:47:54,961 [INFO] ============================================================
+2026-04-18 14:47:54,961 [INFO] 开始语法检查...
+2026-04-18 14:47:55,023 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:47:55,068 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:47:55,111 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:47:55,157 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:47:55,207 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:47:55,253 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:47:55,301 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:47:55,345 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:47:55,346 [INFO] 开始导入测试...
+2026-04-18 14:47:55,347 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:47:55,347 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:47:55,347 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:47:55,348 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:47:55,348 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:47:55,348 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:47:55,349 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:47:55,556 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:47:55,557 [INFO] 测试Chrome调试模式...
+2026-04-18 14:47:55,976 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:47:55,978 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:48:14,164 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:48:14,165 [INFO] ============================================================
+2026-04-18 14:48:14,165 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:48:14,165 [INFO] 测试媒体类型: all
+2026-04-18 14:48:14,165 [INFO] ============================================================
+2026-04-18 14:48:14,166 [INFO] 开始语法检查...
+2026-04-18 14:48:14,216 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:48:14,255 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:48:14,294 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:48:14,332 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:48:14,376 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:48:14,414 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:48:14,457 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:48:14,500 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:48:14,500 [INFO] 开始导入测试...
+2026-04-18 14:48:14,501 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:48:14,501 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:48:14,501 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:48:14,501 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:48:14,502 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:48:14,502 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:48:14,502 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:48:14,675 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:48:14,676 [INFO] 测试Chrome调试模式...
+2026-04-18 14:48:15,049 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:48:15,052 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:48:29,011 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:48:29,013 [INFO] ============================================================
+2026-04-18 14:48:29,013 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:48:29,013 [INFO] 测试媒体类型: all
+2026-04-18 14:48:29,013 [INFO] ============================================================
+2026-04-18 14:48:29,014 [INFO] 开始语法检查...
+2026-04-18 14:48:29,062 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:48:29,100 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:48:29,139 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:48:29,176 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:48:29,217 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:48:29,258 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:48:29,302 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:48:29,344 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:48:29,344 [INFO] 开始导入测试...
+2026-04-18 14:48:29,345 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:48:29,346 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:48:29,346 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:48:29,346 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:48:29,347 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:48:29,347 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:48:29,347 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:48:29,530 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:48:29,531 [INFO] 测试Chrome调试模式...
+2026-04-18 14:48:29,882 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:48:29,885 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:48:42,286 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:48:42,287 [INFO] ============================================================
+2026-04-18 14:48:42,288 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:48:42,288 [INFO] 测试媒体类型: all
+2026-04-18 14:48:42,288 [INFO] ============================================================
+2026-04-18 14:48:42,288 [INFO] 开始语法检查...
+2026-04-18 14:48:42,338 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:48:42,379 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:48:42,421 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:48:42,465 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:48:42,513 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:48:42,555 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:48:42,600 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:48:42,646 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:48:42,646 [INFO] 开始导入测试...
+2026-04-18 14:48:42,647 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:48:42,647 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:48:42,647 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:48:42,648 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:48:42,648 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:48:42,648 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:48:42,648 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:48:42,836 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:48:42,837 [INFO] 测试Chrome调试模式...
+2026-04-18 14:48:43,209 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:48:43,211 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:49:10,315 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:49:10,316 [INFO] ============================================================
+2026-04-18 14:49:10,316 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:49:10,317 [INFO] 测试媒体类型: all
+2026-04-18 14:49:10,317 [INFO] ============================================================
+2026-04-18 14:49:10,317 [INFO] 开始语法检查...
+2026-04-18 14:49:10,367 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:49:10,407 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:49:10,450 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:49:10,488 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:49:10,532 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:49:10,577 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:49:10,620 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:49:10,660 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:49:10,660 [INFO] 开始导入测试...
+2026-04-18 14:49:10,660 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:49:10,661 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:49:10,661 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:49:10,661 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:49:10,662 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:49:10,662 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:49:10,662 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:49:10,837 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:49:10,838 [INFO] 测试Chrome调试模式...
+2026-04-18 14:49:11,192 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:49:11,193 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json
+2026-04-18 14:49:45,905 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:49:45,906 [INFO] ============================================================
+2026-04-18 14:49:45,906 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:49:45,906 [INFO] 测试媒体类型: all
+2026-04-18 14:49:45,906 [INFO] ============================================================
+2026-04-18 14:49:45,906 [INFO] 开始语法检查...
+2026-04-18 14:49:45,961 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:49:45,996 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:49:46,035 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:49:46,072 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:49:46,111 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:49:46,153 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:49:46,196 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:49:46,239 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:49:46,239 [INFO] 开始导入测试...
+2026-04-18 14:49:46,240 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:49:46,240 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:49:46,243 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:49:46,243 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:49:46,243 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:49:46,244 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:49:58,814 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:49:58,815 [INFO] ============================================================
+2026-04-18 14:49:58,815 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:49:58,815 [INFO] 测试媒体类型: all
+2026-04-18 14:49:58,815 [INFO] ============================================================
+2026-04-18 14:49:58,815 [INFO] 开始语法检查...
+2026-04-18 14:49:58,863 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:49:58,901 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:49:58,945 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:49:58,985 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:49:59,030 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:49:59,067 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:49:59,112 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:49:59,155 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:49:59,155 [INFO] 开始导入测试...
+2026-04-18 14:49:59,156 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:49:59,156 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:49:59,157 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:49:59,157 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:49:59,157 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:49:59,158 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:50:33,650 [INFO] 项目根目录: /mnt/c/Users/王/Desktop/pinterest-scraper/tests
+2026-04-18 14:50:33,651 [INFO] ============================================================
+2026-04-18 14:50:33,652 [INFO] 开始构建和媒体类型测试
+2026-04-18 14:50:33,652 [INFO] 测试媒体类型: all
+2026-04-18 14:50:33,652 [INFO] ============================================================
+2026-04-18 14:50:33,652 [INFO] 开始语法检查...
+2026-04-18 14:50:33,703 [INFO] ✓ 语法正确: scraper.py
+2026-04-18 14:50:33,742 [INFO] ✓ 语法正确: main.py
+2026-04-18 14:50:33,782 [INFO] ✓ 语法正确: downloader.py
+2026-04-18 14:50:33,825 [INFO] ✓ 语法正确: shared/models.py
+2026-04-18 14:50:33,875 [INFO] ✓ 语法正确: api_service_enhanced/task_manager.py
+2026-04-18 14:50:33,917 [INFO] ✓ 语法正确: shared/config_schema.py
+2026-04-18 14:50:33,966 [INFO] ✓ 语法正确: tray_app/console_gui.py
+2026-04-18 14:50:34,013 [INFO] ✓ 语法正确: tray_app/tray_icon.py
+2026-04-18 14:50:34,013 [INFO] 开始导入测试...
+2026-04-18 14:50:34,014 [ERROR] ✗ 导入失败: from scraper import PinterestScraper - No module named 'PinterestScraper'
+2026-04-18 14:50:34,014 [ERROR] ✗ 导入失败: from downloader import ImageDownloader - No module named 'ImageDownloader'
+2026-04-18 14:50:34,015 [ERROR] ✗ 导入失败: from shared.models import Pin - No module named 'Pin'
+2026-04-18 14:50:34,015 [ERROR] ✗ 导入失败: from api_service_enhanced.task_manager import TaskManager - No module named 'TaskManager'
+2026-04-18 14:50:34,015 [ERROR] ✗ 导入失败: from tray_app.console_gui import ScraperConsole - No module named 'ScraperConsole'
+2026-04-18 14:50:34,016 [ERROR] ✗ 导入失败: from tray_app.tray_icon import TrayIconManager - No module named 'TrayIconManager'
+2026-04-18 14:50:34,016 [INFO] 开始测试媒体类型模式: all
+2026-04-18 14:50:34,226 [INFO] ✓ 媒体类型 'all' 测试通过
+2026-04-18 14:50:34,227 [INFO] 测试Chrome调试模式...
+2026-04-18 14:50:34,620 [WARNING] 调试模式测试跳过: BrowserType.launch: Executable doesn't exist at /home/lrp/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     playwright install                                     ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+2026-04-18 14:50:34,622 [INFO] 测试结果已保存至: /mnt/c/Users/王/Desktop/pinterest-scraper/test_results.json

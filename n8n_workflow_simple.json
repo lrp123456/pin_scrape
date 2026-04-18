@@ -1,0 +1,286 @@
+{
+  "name": "Pinterest Scraper 简洁版",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// 配置参数\nconst query = $input.first().json.query || '现代简约';\nconst maxPins = $input.first().json.max_pins || 50;\nconst minSaves = $input.first().json.min_saves || 50;\nconst minLikes = $input.first().json.min_likes || 10;\nconst minComments = $input.first().json.min_comments || 0;\nconst downloadImages = $input.first().json.download_images !== false;\n\nreturn [{\n  json: {\n    query,\n    max_pins: maxPins,\n    min_saves: minSaves,\n    min_likes: minLikes,\n    min_comments: minComments,\n    download_images: downloadImages\n  }\n}];"
+      },
+      "name": "设置参数",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://python-runner:5000/run/pinterest_scraper_n8n.py",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "script",
+              "value": "pinterest_scraper_n8n.py"
+            },
+            {
+              "name": "args",
+              "value": [
+                "--query",
+                "={{ $json.query }}",
+                "--max-pins",
+                "={{ $json.max_pins }}",
+                "--min-saves",
+                "={{ $json.min_saves }}",
+                "--min-likes",
+                "={{ $json.min_likes }}",
+                "--min-comments",
+                "={{ $json.min_comments }}",
+                "--download-images",
+                "={{ $json.download_images }}"
+              ]
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "name": "运行 Pinterest 爬虫",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ]
+        }
+      },
+      "name": "检查是否成功",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析爬虫结果\nconst stdout = $input.first().json.stdout;\nconst result = JSON.parse(stdout);\n\nif (!result.success) {\n  throw new Error(result.error || '爬取失败');\n}\n\nreturn [{\n  json: {\n    success: result.success,\n    query: result.query,\n    output_dir: result.output_dir,\n    full_file: result.files.full.path,\n    filtered_file: result.files.filtered.path,\n    total_pins: result.files.full.total_pins,\n    filtered_pins: result.files.filtered.total_pins,\n    download_info: result.download\n  }\n}];"
+      },
+      "name": "解析结果",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 读取完整数据 JSON\nconst fs = require('fs');\nconst path = $input.first().json.full_file;\n\ntry {\n  const data = JSON.parse(fs.readFileSync(path, 'utf8'));\n  return [{\n    json: {\n      file_type: 'full',\n      file_path: path,\n      file_name: 'data.json',\n      query: data.query,\n      total_pins: data.total_pins,\n      main_pins: data.main_pins,\n      similar_pins: data.similar_pins,\n      filtered_pins: data.filtered_pins,\n      timestamp: data.timestamp,\n      pins: data.pins\n    }\n  }];\n} catch (error) {\n  throw new Error(`读取完整数据失败: ${error.message}`);\n}"
+      },
+      "name": "读取完整JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 读取筛选后数据 JSON\nconst fs = require('fs');\nconst path = $input.first().json.filtered_file;\n\ntry {\n  const data = JSON.parse(fs.readFileSync(path, 'utf8'));\n  return [{\n    json: {\n      file_type: 'filtered',\n      file_path: path,\n      file_name: 'filtered_data.json',\n      query: data.query,\n      total_pins: data.total_pins,\n      timestamp: data.timestamp,\n      pins: data.pins\n    }\n  }];\n} catch (error) {\n  throw new Error(`读取筛选数据失败: ${error.message}`);\n}"
+      },
+      "name": "读取筛选后JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.download_images }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "name": "是否下载图片？",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://python-runner:5000/run/pinterest_download_images.py",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "script",
+              "value": "pinterest_download_images.py"
+            },
+            {
+              "name": "args",
+              "value": [
+                "--json",
+                "={{ $json.filtered_file }}",
+                "--min-saves",
+                "={{ $json.min_saves }}",
+                "--min-likes",
+                "={{ $json.min_likes }}",
+                "--min-comments",
+                "={{ $json.min_comments }}"
+              ]
+            }
+          ]
+        },
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "name": "下载图片",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析下载结果\nconst stdout = $input.first().json.stdout;\nconst result = JSON.parse(stdout);\n\nreturn [{\n  json: {\n    download_success: result.success,\n    total_images: result.total,\n    downloaded_images: result.downloaded,\n    images_dir: result.images_dir\n  }\n}];"
+      },
+      "name": "解析下载结果",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 错误处理\nconst stderr = $input.first().json.stderr || '';\nconst stdout = $input.first().json.stdout || '';\n\nreturn [{\n  json: {\n    success: false,\n    error: stderr || stdout || '未知错误',\n    timestamp: $now\n  }\n}];"
+      },
+      "name": "处理错误",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 600]
+    },
+    {
+      "parameters": {},
+      "name": "手动触发",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [50, 300]
+    }
+  ],
+  "connections": {
+    "设置参数": {
+      "main": [
+        [
+          {
+            "node": "运行 Pinterest 爬虫",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "运行 Pinterest 爬虫": {
+      "main": [
+        [
+          {
+            "node": "检查是否成功",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "检查是否成功": {
+      "main": [
+        [
+          {
+            "node": "解析结果",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "处理错误",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析结果": {
+      "main": [
+        [
+          {
+            "node": "读取完整JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "读取筛选后JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "是否下载图片？",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否下载图片？": {
+      "main": [
+        [
+          {
+            "node": "下载图片",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "解析下载结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下载图片": {
+      "main": [
+        [
+          {
+            "node": "解析下载结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "手动触发": {
+      "main": [
+        [
+          {
+            "node": "设置参数",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

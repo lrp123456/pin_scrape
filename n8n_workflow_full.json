@@ -1,0 +1,385 @@
+{
+  "name": "Pinterest Scraper 完整工作流",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-node",
+      "name": "手动触发",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 配置参数\nconst query = $input.first().json.query || '现代简约';\nconst maxPins = $input.first().json.max_pins || 50;\nconst minSaves = $input.first().json.min_saves || 50;\nconst minLikes = $input.first().json.min_likes || 10;\nconst minComments = $input.first().json.min_comments || 0;\nconst downloadImages = $input.first().json.download_images !== false;\n\nreturn [{\n  json: {\n    query,\n    max_pins: maxPins,\n    min_saves: minSaves,\n    min_likes: minLikes,\n    min_comments: minComments,\n    download_images: downloadImages\n  }\n}];"
+      },
+      "id": "set-params-node",
+      "name": "设置参数",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://python-runner:5000/run/pinterest_scraper_n8n.py",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "args": [
+            "--query", "={{ $json.query }}",
+            "--max-pins", "={{ $json.max_pins }}",
+            "--min-saves", "={{ $json.min_saves }}",
+            "--min-likes", "={{ $json.min_likes }}",
+            "--min-comments", "={{ $json.min_comments }}",
+            "--download-images", "={{ $json.download_images }}"
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "scraper-node",
+      "name": "运行 Pinterest 爬虫",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-success-node",
+      "name": "检查是否成功",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析爬虫结果\nconst stdout = $input.first().json.stdout;\nconst result = JSON.parse(stdout);\n\nif (!result.success) {\n  throw new Error(result.error || '爬取失败');\n}\n\nreturn [{\n  json: {\n    success: result.success,\n    query: result.query,\n    output_dir: result.output_dir,\n    full_file: result.files.full.path,\n    filtered_file: result.files.filtered.path,\n    total_pins: result.files.full.total_pins,\n    filtered_pins: result.files.filtered.total_pins,\n    download_info: result.download\n  }\n}];"
+      },
+      "id": "parse-result-node",
+      "name": "解析结果",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 读取完整数据 JSON\nconst fs = require('fs');\nconst path = $input.first().json.full_file;\n\ntry {\n  const data = JSON.parse(fs.readFileSync(path, 'utf8'));\n  return [{\n    json: {\n      file_path: path,\n      file_name: 'data.json',\n      total_pins: data.total_pins,\n      main_pins: data.main_pins,\n      similar_pins: data.similar_pins,\n      pins: data.pins\n    }\n  }];\n} catch (error) {\n  throw new Error(`读取完整数据失败: ${error.message}`);\n}"
+      },
+      "id": "read-full-json-node",
+      "name": "读取完整JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 读取筛选后数据 JSON\nconst fs = require('fs');\nconst path = $input.first().json.filtered_file;\n\ntry {\n  const data = JSON.parse(fs.readFileSync(path, 'utf8'));\n  return [{\n    json: {\n      file_path: path,\n      file_name: 'filtered_data.json',\n      total_pins: data.total_pins,\n      pins: data.pins\n    }\n  }];\n} catch (error) {\n  throw new Error(`读取筛选数据失败: ${error.message}`);\n}"
+      },
+      "id": "read-filtered-json-node",
+      "name": "读取筛选后JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "your-spreadsheet-id",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.query }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $json.query }}",
+            "total_pins": "={{ $json.total_pins }}",
+            "filtered_pins": "={{ $json.filtered_pins }}",
+            "output_dir": "={{ $json.output_dir }}",
+            "timestamp": "={{ $now }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "google-sheets-node",
+      "name": "记录到 Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.download_images }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "if-download-node",
+      "name": "是否下载图片？",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://python-runner:5000/run/pinterest_download_images.py",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "args": [
+            "--json", "={{ $json.filtered_file }}",
+            "--min-saves", "={{ $json.min_saves }}",
+            "--min-likes", "={{ $json.min_likes }}",
+            "--min-comments", "={{ $json.min_comments }}"
+          ]
+        },
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "download-node",
+      "name": "下载图片",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1250, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析下载结果\nconst stdout = $input.first().json.stdout;\nconst result = JSON.parse(stdout);\n\nreturn [{\n  json: {\n    download_success: result.success,\n    total_images: result.total,\n    downloaded_images: result.downloaded,\n    images_dir: result.images_dir\n  }\n}];"
+      },
+      "id": "parse-download-node",
+      "name": "解析下载结果",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 500]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "resource": "file",
+        "parentId": "your-folder-id",
+        "name": "={{ 'pinterest_' + $json.query + '_' + $now.format('YYYY-MM-DD') }}",
+        "binaryData": false
+      },
+      "id": "google-drive-node",
+      "name": "上传到 Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 错误处理\nconst stderr = $input.first().json.stderr || '';\nconst stdout = $input.first().json.stdout || '';\n\nreturn [{\n  json: {\n    success: false,\n    error: stderr || stdout || '未知错误',\n    timestamp: $now\n  }\n}];"
+      },
+      "id": "error-node",
+      "name": "处理错误",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 600]
+    },
+    {
+      "parameters": {
+        "channel": "notifications",
+        "text": "❌ Pinterest 爬取失败\n\n查询词: {{ $json.query }}\n错误: {{ $json.error }}\n时间: {{ $json.timestamp }}"
+      },
+      "id": "slack-error-node",
+      "name": "发送错误通知",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1250, 600]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "手动触发": {
+      "main": [
+        [
+          {
+            "node": "设置参数",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "设置参数": {
+      "main": [
+        [
+          {
+            "node": "运行 Pinterest 爬虫",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "运行 Pinterest 爬虫": {
+      "main": [
+        [
+          {
+            "node": "检查是否成功",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "检查是否成功": {
+      "main": [
+        [
+          {
+            "node": "解析结果",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "处理错误",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析结果": {
+      "main": [
+        [
+          {
+            "node": "读取完整JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "读取筛选后JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "是否下载图片？",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "读取完整JSON": {
+      "main": [
+        [
+          {
+            "node": "记录到 Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "读取筛选后JSON": {
+      "main": [
+        [
+          {
+            "node": "记录到 Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否下载图片？": {
+      "main": [
+        [
+          {
+            "node": "下载图片",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "上传到 Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下载图片": {
+      "main": [
+        [
+          {
+            "node": "解析下载结果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析下载结果": {
+      "main": [
+        [
+          {
+            "node": "上传到 Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "处理错误": {
+      "main": [
+        [
+          {
+            "node": "发送错误通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": ""
+  }
+}
