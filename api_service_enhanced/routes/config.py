@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import Optional
 import json
 from pathlib import Path
+import redis
 
 router = APIRouter()
 
@@ -25,6 +26,10 @@ class ConfigUpdate(BaseModel):
     default_min_likes: Optional[int] = None
     default_min_comments: Optional[int] = None
     auto_start: Optional[bool] = None
+    redis_host: Optional[str] = None
+    redis_port: Optional[int] = None
+    redis_db: Optional[int] = None
+    redis_password: Optional[str] = "u8QMIvCwvFZ7rtCOfWvmKI7uXCxFiwf5"
 
 
 def load_config() -> dict:
@@ -94,9 +99,75 @@ async def reset_config():
         'default_min_saves': 0,
         'default_min_likes': 0,
         'default_min_comments': 0,
-        'auto_start': False
+        'auto_start': False,
+        'redis_host': 'localhost',
+        'redis_port': 6379,
+        'redis_db': 0,
+        'redis_password': 'u8QMIvCwvFZ7rtCOfWvmKI7uXCxFiwf5'
     }
 
     save_config(default_config)
 
     return default_config
+
+@router.post("/config/test-redis")
+async def test_redis_connection():
+    """测试 Redis 连接
+
+    Returns:
+        测试结果
+    """
+    config = load_config()
+    
+    redis_host = config.get('redis_host', 'localhost')
+    redis_port = config.get('redis_port', 6379)
+    redis_db = config.get('redis_db', 0)
+    redis_password = config.get('redis_password', '') or None
+    
+    try:
+        # 尝试连接 Redis
+        r = redis.Redis(
+            host=redis_host,
+            port=redis_port,
+            db=redis_db,
+            password=redis_password,
+            socket_timeout=5,
+            decode_responses=True
+        )
+        
+        # 执行 PING 测试
+        result = r.ping()
+        
+        # 获取一些基本信息
+        info = r.info('server')
+        
+        return {
+            "success": True,
+            "message": "Redis 连接成功",
+            "details": {
+                "host": redis_host,
+                "port": redis_port,
+                "db": redis_db,
+                "redis_version": info.get('redis_version', 'unknown'),
+                "connected_clients": info.get('connected_clients', 'unknown')
+            }
+        }
+        
+    except redis.ConnectionError as e:
+        return {
+            "success": False,
+            "message": f"Redis 连接失败：无法连接到 {redis_host}:{redis_port}",
+            "error": str(e)
+        }
+    except redis.AuthenticationError as e:
+        return {
+            "success": False,
+            "message": "Redis 认证失败：密码错误",
+            "error": str(e)
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Redis 测试出错：{str(e)}",
+            "error": str(e)
+        }
