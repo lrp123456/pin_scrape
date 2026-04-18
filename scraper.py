@@ -611,14 +611,14 @@ class PinterestScraper:
                     unvisited = [sp for sp in similar_pins if sp["id"] not in visited_ids]
                     
                     upgraded = False
-                    checked_count = 0  # 当前页面已检查的相似推荐数量
-                    max_checks_per_scroll = 5  # 每次滚动后最多检查 5 个
+                    checked_count = 0  # 当前详情页已检查的相似推荐总数
+                    max_checks_before_scroll = 5  # 每次滚动后最多检查 5 个再滚动
                     
-                    # 循环检查：每次检查最多 5 个，如果没有更优的，滚动一次再继续检查
-                    while checked_count < 20 and not upgraded:  # 最多检查 20 个（4 次滚动 * 5 个）
-                        # 遍历未访问的相似推荐，最多检查 max_checks_per_scroll 个
+                    # 持续循环：检查 5 个 → 没找到更优 → PGDN 滚动 → 排除已检查的 → 再检查新的 5 个 → 直到找到更优或确认没有更多推荐
+                    while not upgraded:
+                        # 遍历未访问的相似推荐，最多检查 max_checks_before_scroll 个
                         batch_checked = 0
-                        for sp in unvisited[:max_checks_per_scroll]:
+                        for sp in unvisited[:max_checks_before_scroll]:
                             if upgraded:
                                 break
                                 
@@ -666,18 +666,18 @@ class PinterestScraper:
                                 except: pass
                                 continue
                         
-                        # 如果这一批检查完还没有升级，且还有未检查的，滚动一次加载更多
-                        if not upgraded and batch_checked > 0:
-                            # 重新获取相似推荐列表（滚动后会有新的）
-                            print(f"    当前批次已检查{batch_checked}个，未发现更优，滚动页面加载更多...")
+                        # 如果这一批检查完还没有升级，滚动一次加载更多，然后排除已检查的，继续检查新的
+                        if not upgraded:
+                            print(f"    已检查{batch_checked}个，未发现更优，PGDN 滚动加载更多相似推荐...")
                             self._scroll_page_with_pgdn()
                             time.sleep(random.uniform(2, 3))
-                            # 重新获取更新后的相似推荐列表
+                            
+                            # 重新获取更新后的相似推荐列表（滚动后会有新的）
                             similar_pins = self._find_similar_pins_in_modal(scroll_times=1)
                             unvisited = [sp for sp in similar_pins if sp["id"] not in visited_ids]
                             
                             if not unvisited:
-                                print("    滚动后没有新的相似推荐了")
+                                print("    滚动后没有新的相似推荐了，当前节点已是局部最优")
                                 break
 
                     # 如果检查了足够多的推荐都没有更优的，说明到了局部最优，必须退回搜索页重新选起点了
