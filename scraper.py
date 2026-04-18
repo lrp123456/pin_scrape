@@ -611,55 +611,81 @@ class PinterestScraper:
                     unvisited = [sp for sp in similar_pins if sp["id"] not in visited_ids]
                     
                     upgraded = False
+                    checked_count = 0  # 当前详情页已检查的相似推荐总数
+                    max_checks_before_scroll = 5  # 每次滚动后最多检查 5 个再滚动
                     
-                    # 遍历未访问的相似推荐，最多检查 5 个防止陷入死循环
-                    for sp in unvisited[:5]:
-                        sp_id = sp["id"]
-                        print(f"    尝试点击推荐: {sp_id}")
-                        try:
-                            similar_link = self.page.query_selector(f'a[href*="/pin/{sp_id}"]')
-                            if not similar_link:
-                                continue
+                    # 持续循环：检查 5 个 → 没找到更优 → PGDN 滚动 → 排除已检查的 → 再检查新的 5 个 → 直到找到更优或确认没有更多推荐
+                    while not upgraded:
+                        # 遍历未访问的相似推荐，最多检查 max_checks_before_scroll 个
+                        batch_checked = 0
+                        for sp in unvisited[:max_checks_before_scroll]:
+                            if upgraded:
+                                break
                                 
-                            similar_link.scroll_into_view_if_needed()
-                            time.sleep(random.uniform(0.5, 1))
-                            similar_link.click()
-                            time.sleep(random.uniform(3, 5))  # 等待新详情页加载
-                            
-                            sp_details = self._extract_pin_details_from_modal()
-                            if not sp_details or not sp_details.get("id"):
-                                print("      提取失败，后退")
+                            sp_id = sp["id"]
+                            checked_count += 1
+                            batch_checked += 1
+                            print(f"    尝试点击推荐：{sp_id} (第{checked_count}个)")
+                            try:
+                                similar_link = self.page.query_selector(f'a[href*="/pin/{sp_id}"]')
+                                if not similar_link:
+                                    visited_ids.add(sp_id)
+                                    continue
+                                    
+                                similar_link.scroll_into_view_if_needed()
+                                time.sleep(random.uniform(0.5, 1))
+                                similar_link.click()
+                                time.sleep(random.uniform(3, 5))  # 等待新详情页加载
+                                
+                                sp_details = self._extract_pin_details_from_modal()
+                                if not sp_details or not sp_details.get("id"):
+                                    print("      提取失败，后退")
+                                    visited_ids.add(sp_id)
+                                    self.page.go_back()
+                                    time.sleep(random.uniform(1.5, 2.5))
+                                    continue
+                                    
+                                sp_saves = sp_details.get("saves", 0) or 0
+                                
+                                # 核心对比逻辑：决定是否停留
+                                if sp_saves > current_saves:
+                                    print(f"      → 发现更优跳板！{sp_saves} > {current_saves}")
+                                    current_pin_id = sp_id  # 替换主体
+                                    upgraded = True
+                                    break  # 打破 for 循环，停留在新页面，由外层 while 继续深度探索
+                                else:
+                                    print(f"      → 不够优 ({sp_saves} <= {current_saves})，后退查看下一个")
+                                    visited_ids.add(sp_id)
+                                    self.page.go_back()  # 不够优，用 go_back 退回 current_pin_id 的页面
+                                    time.sleep(random.uniform(2, 3))
+                                    
+                            except Exception as e:
+                                print(f"      检查跳板时出错：{e}，尝试后退")
                                 visited_ids.add(sp_id)
-                                self.page.go_back()
-                                time.sleep(random.uniform(1.5, 2.5))
+                                try: self.page.go_back() 
+                                except: pass
                                 continue
-                                
-                            sp_saves = sp_details.get("saves", 0) or 0
+                        
+                        # 如果这一批检查完还没有升级，滚动一次加载更多，然后排除已检查的，继续检查新的
+                        if not upgraded:
+                            print(f"    已检查{batch_checked}个，未发现更优，PGDN 滚动加载更多相似推荐...")
+                            self._scroll_page_with_pgdn()
+                            time.sleep(random.uniform(2, 3))
                             
-                            # 核心对比逻辑：决定是否停留
-                            if sp_saves > current_saves:
-                                print(f"      → 发现更优跳板! {sp_saves} > {current_saves}")
-                                current_pin_id = sp_id  # 替换主体
-                                upgraded = True
-                                break  # 打破 for 循环，停留在新页面，由外层 while 继续深度探索
-                            else:
-                                print(f"      → 不够优 ({sp_saves} <= {current_saves})，后退查看下一个")
-                                visited_ids.add(sp_id)
-                                self.page.go_back()  # 不够优，用 go_back 退回 current_pin_id 的页面
-                                time.sleep(random.uniform(2, 3))
-                                
-                        except Exception as e:
-                            print(f"      检查跳板时出错: {e}，尝试后退")
-                            visited_ids.add(sp_id)
-                            try: self.page.go_back() 
-                            except: pass
-                            continue
+                            # 重新获取更新后的相似推荐列表（滚动后会有新的）
+                            similar_pins = self._find_similar_pins_in_modal(scroll_times=1)
+                            unvisited = [sp for sp in similar_pins if sp["id"] not in visited_ids]
+                            
+                            if not unvisited:
+                                print("    滚动后没有新的相似推荐了，当前节点已是局部最优")
+                                break
 
-                    # 如果检查了推荐都没有更优的，说明到了局部最优，必须退回搜索页重新选起点了
+                    # 如果检查了足够多的推荐都没有更优的，说明到了局部最优，必须退回搜索页重新选起点了
                     if not upgraded:
-                        print(f"  [深度{depth}] 当前节点已是局部最优，无更好推荐。返回搜索页更换起点。")
+                        print(f"  [深度{depth}] 当前节点已是局部最优，已检查{checked_count}个推荐均不更优。返回搜索页更换起点。")
                         self._navigate_back_to_search(self._current_keyword)
                         break
+
                 if not found_qualified:
                     try:
                         self._close_pin_modal()
@@ -980,19 +1006,22 @@ class PinterestScraper:
             return pin_ids if pin_ids else []
         except Exception as e:
             print(f"获取搜索页pin ID失败: {e}")
-            return []
+
+    def _scroll_page(self):
+        """滚动页面 - 使用 PageDown 键"""
+        self._scroll_page_with_pgdn()
 
     def _scroll_page_with_pgdn(self):
-        """使用PageDown键滚动页面 - 单次点击，确保一次调用只滚动一次"""
+        """使用 PageDown 键滚动页面 - 单次点击，确保一次调用只滚动一次"""
         try:
-            # 点击PGDN键滚动一次
+            # 点击 PGDN 键滚动一次
             self.page.keyboard.press("PageDown")
-            print(f"  页面滚动: 1次 (PGDN)")
+            print(f"  页面滚动：1 次 (PGDN)")
             # 滚动后等待页面加载
             time.sleep(random.uniform(2, 3))
 
         except Exception as e:
-            print(f"页面滚动出错: {e}")
+            print(f"页面滚动出错：{e}")
             try:
                 # 备用方式：JavaScript 滚动（如果键盘滚动失败）
                 self.page.evaluate("window.scrollBy(0, window.innerHeight);")
@@ -1004,6 +1033,7 @@ class PinterestScraper:
 
         # 最终等待确保所有内容加载完成
         time.sleep(random.uniform(2, 4))
+
 
     def _get_visible_pin_elements(self) -> list:
         """获取当前视口内可见的 pin 元素"""

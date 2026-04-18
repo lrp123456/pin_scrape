@@ -390,7 +390,14 @@ class ScraperConsole:
                 self._log(f"✗ 启动失败: {error}")
 
         except Exception as e:
-            self._log(f"✗ 请求失败: {str(e)}")
+            # 忽略 node.js deprecation warning 等 stderr 输出
+            error_msg = str(e)
+            # 过滤掉常见的警告信息
+            if "DeprecationWarning" in error_msg or "url.parse" in error_msg:
+                self._log("⏹ 正在停止任务...")
+                self._set_ui_running(False)
+            else:
+                self._log(f"✗ 请求失败：{error_msg}")
 
     def _stop_scrape(self):
         """停止爬取"""
@@ -402,7 +409,14 @@ class ScraperConsole:
             else:
                 self._log("✗ 停止失败")
         except Exception as e:
-            self._log(f"✗ 请求失败: {str(e)}")
+            # 忽略 node.js deprecation warning 等 stderr 输出
+            error_msg = str(e)
+            # 过滤掉常见的警告信息
+            if "DeprecationWarning" in error_msg or "url.parse" in error_msg:
+                self._log("⏹ 正在停止任务...")
+                self._set_ui_running(False)
+            else:
+                self._log(f"✗ 请求失败：{error_msg}")
 
     def _get_params(self):
         """获取爬取参数"""
