@@ -980,19 +980,22 @@ class PinterestScraper:
             return pin_ids if pin_ids else []
         except Exception as e:
             print(f"获取搜索页pin ID失败: {e}")
-            return []
+
+    def _scroll_page(self):
+        """滚动页面 - 使用 PageDown 键"""
+        self._scroll_page_with_pgdn()
 
     def _scroll_page_with_pgdn(self):
-        """使用PageDown键滚动页面 - 单次点击，确保一次调用只滚动一次"""
+        """使用 PageDown 键滚动页面 - 单次点击，确保一次调用只滚动一次"""
         try:
-            # 点击PGDN键滚动一次
+            # 点击 PGDN 键滚动一次
             self.page.keyboard.press("PageDown")
-            print(f"  页面滚动: 1次 (PGDN)")
+            print(f"  页面滚动：1 次 (PGDN)")
             # 滚动后等待页面加载
             time.sleep(random.uniform(2, 3))
 
         except Exception as e:
-            print(f"页面滚动出错: {e}")
+            print(f"页面滚动出错：{e}")
             try:
                 # 备用方式：JavaScript 滚动（如果键盘滚动失败）
                 self.page.evaluate("window.scrollBy(0, window.innerHeight);")
@@ -1004,6 +1007,7 @@ class PinterestScraper:
 
         # 最终等待确保所有内容加载完成
         time.sleep(random.uniform(2, 4))
+
 
     def _get_visible_pin_elements(self) -> list:
         """获取当前视口内可见的 pin 元素"""
