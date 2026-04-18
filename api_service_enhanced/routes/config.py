@@ -29,7 +29,7 @@ class ConfigUpdate(BaseModel):
     redis_host: Optional[str] = None
     redis_port: Optional[int] = None
     redis_db: Optional[int] = None
-    redis_password: Optional[str] = None
+    redis_password: Optional[str] = "u8QMIvCwvFZ7rtCOfWvmKI7uXCxFiwf5"
 
 
 def load_config() -> dict:
@@ -103,7 +103,7 @@ async def reset_config():
         'redis_host': 'localhost',
         'redis_port': 6379,
         'redis_db': 0,
-        'redis_password': ''
+        'redis_password': 'u8QMIvCwvFZ7rtCOfWvmKI7uXCxFiwf5'
     }
 
     save_config(default_config)
