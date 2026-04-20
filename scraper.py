@@ -1274,6 +1274,20 @@ class PinterestScraper:
                                 if (pin.reaction_counts && pin.reaction_counts["1"]) {
                                     likes = parseInt(pin.reaction_counts["1"]) || 0;
                                 }
+                                // Detect video
+                                let isVideo = false;
+                                let videoUrl = '';
+                                if (pin.videos && Object.keys(pin.videos).length > 0) {
+                                    isVideo = true;
+                                    const videoList = pin.videos.video_list || {};
+                                    for (const quality of ['V_720P', 'V_480P', 'V_360P']) {
+                                        if (videoList[quality] && videoList[quality].url) {
+                                            videoUrl = videoList[quality].url;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
                                 const result = {
                                     id: id,
                                     title: pin.grid_title || pin.title || '',
@@ -1282,7 +1296,9 @@ class PinterestScraper:
                                     likes: likes,
                                     comments: parseInt(aggData.comment_count) || 0,
                                     pinner: (pin.pinner || {}).username || '',
-                                    images: pin.images || {}
+                                    images: pin.images || {},
+                                    is_video: isVideo,
+                                    video_url: videoUrl
                                 };
                                 if (result.saves > 0 || result.likes > 0 || result.comments > 0) {
                                     return result;
@@ -1297,6 +1313,20 @@ class PinterestScraper:
                                     if (pin.reaction_counts && pin.reaction_counts["1"]) {
                                         likes = parseInt(pin.reaction_counts["1"]) || 0;
                                     }
+                                    // Detect video
+                                    let isVideo = false;
+                                    let videoUrl = '';
+                                    if (pin.videos && Object.keys(pin.videos).length > 0) {
+                                        isVideo = true;
+                                        const videoList = pin.videos.video_list || {};
+                                        for (const quality of ['V_720P', 'V_480P', 'V_360P']) {
+                                            if (videoList[quality] && videoList[quality].url) {
+                                                videoUrl = videoList[quality].url;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
                                     const result = {
                                         id: String(pin.id || key),
                                         title: pin.grid_title || pin.title || '',
@@ -1305,7 +1335,9 @@ class PinterestScraper:
                                         likes: likes,
                                         comments: parseInt(aggData.comment_count) || 0,
                                         pinner: (pin.pinner || {}).username || '',
-                                        images: pin.images || {}
+                                        images: pin.images || {},
+                                        is_video: isVideo,
+                                        video_url: videoUrl
                                     };
                                     if (result.saves > 0 || result.likes > 0) {
                                         return result;
@@ -1352,6 +1384,19 @@ class PinterestScraper:
                         const imgEl = document.querySelector('img[src*="pinimg"]');
                         let imageUrl = '';
                         if (imgEl) imageUrl = imgEl.src || '';
+                        // Detect video via DOM: look for data-test-id="pinrep-video"
+                        let isVideo = false;
+                        let videoUrl = '';
+                        const videoElement = document.querySelector('[data-test-id="pinrep-video"]');
+                        if (videoElement) {
+                            isVideo = true;
+                            // Also check for duration label to confirm
+                            const durationEl = document.querySelector('[data-test-id="PinTypeIdentifier"] span');
+                            if (durationEl) {
+                                isVideo = true;
+                            }
+                        }
+                        
                         if (saves > 0 || likes > 0 || comments > 0 || title) {
                             return {
                                 id: pinId,
@@ -1361,7 +1406,9 @@ class PinterestScraper:
                                 likes: likes,
                                 comments: comments,
                                 pinner: '',
-                                images: imageUrl ? { orig: { url: imageUrl } } : {}
+                                images: imageUrl ? { orig: { url: imageUrl } } : {},
+                                is_video: isVideo,
+                                video_url: videoUrl
                             };
                         }
                         return null;
