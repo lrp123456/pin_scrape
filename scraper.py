@@ -569,12 +569,14 @@ class PinterestScraper:
                     current_saves = saves  # 记录当前节点的 saves，作为后续爬坡的对比基准
 
                     # 2. 判断是否收集当前节点：只要 saves >= min_saves 且媒体类型匹配，就无脑收集
-                    if saves >= min_saves:
-                        media_match = True
-                        if self.media_type == "images" and is_video: media_match = False
-                        if self.media_type == "video" and not is_video: media_match = False
-
-                        if media_match and current_pin_id not in collected_pins:
+                    # 【修复】climb_mode 模式下也需要检查 min_saves，否则会导致无限制收集
+                    media_match = True
+                    if self.media_type == "images" and is_video: media_match = False
+                    if self.media_type == "video" and not is_video: media_match = False
+                    
+                    # 只有同时满足 saves 阈值和媒体类型匹配才收集
+                    if saves >= min_saves and media_match:
+                        if current_pin_id not in collected_pins:
                             # 构建并保存 Pin
                             images = details.get("images", {})
                             pin = Pin(
@@ -608,7 +610,32 @@ class PinterestScraper:
                     print(f"  [深度{depth}] 开始寻找更优跳板 (目标 Saves > {current_saves})...")
                     
                     similar_pins = self._find_similar_pins_in_modal(scroll_times=1)
-                    unvisited = [sp for sp in similar_pins if sp["id"] not in visited_ids]
+                    
+                    # 【修复】提前过滤媒体类型不匹配的相似推荐，避免无效点击
+                    filtered_similar_pins = []
+                    for sp in similar_pins:
+                        if sp["id"] in visited_ids:
+                            continue
+                        # 快速检查媒体类型（通过 DOM 属性判断，避免点击进入）
+                        try:
+                            sp_element = self.page.query_selector(f'a[href*="/pin/{sp["id"]}"]')
+                            if sp_element:
+                                is_video_elem = sp_element.query_selector('[data-test-id="pinrep-video"], [data-test-id="PinTypeIdentifier"]')
+                                sp_is_video = is_video_elem is not None
+                                
+                                # 媒体类型过滤
+                                if self.media_type == "images" and sp_is_video:
+                                    visited_ids.add(sp["id"])  # 标记为已访问，避免重复检查
+                                    continue
+                                if self.media_type == "video" and not sp_is_video:
+                                    visited_ids.add(sp["id"])
+                                    continue
+                                filtered_similar_pins.append(sp)
+                        except Exception:
+                            # 如果无法判断，默认保留
+                            filtered_similar_pins.append(sp)
+                    
+                    unvisited = filtered_similar_pins
                     
                     upgraded = False
                     checked_count = 0  # 当前详情页已检查的相似推荐总数
@@ -674,7 +701,29 @@ class PinterestScraper:
                             
                             # 重新获取更新后的相似推荐列表（滚动后会有新的）
                             similar_pins = self._find_similar_pins_in_modal(scroll_times=1)
-                            unvisited = [sp for sp in similar_pins if sp["id"] not in visited_ids]
+                            
+                            # 【修复】同样需要过滤媒体类型不匹配的相似推荐
+                            filtered_similar_pins = []
+                            for sp in similar_pins:
+                                if sp["id"] in visited_ids:
+                                    continue
+                                try:
+                                    sp_element = self.page.query_selector(f'a[href*="/pin/{sp["id"]}"]')
+                                    if sp_element:
+                                        is_video_elem = sp_element.query_selector('[data-test-id="pinrep-video"], [data-test-id="PinTypeIdentifier"]')
+                                        sp_is_video = is_video_elem is not None
+                                        
+                                        if self.media_type == "images" and sp_is_video:
+                                            visited_ids.add(sp["id"])
+                                            continue
+                                        if self.media_type == "video" and not sp_is_video:
+                                            visited_ids.add(sp["id"])
+                                            continue
+                                        filtered_similar_pins.append(sp)
+                                except Exception:
+                                    filtered_similar_pins.append(sp)
+                            
+                            unvisited = filtered_similar_pins
                             
                             if not unvisited:
                                 print("    滚动后没有新的相似推荐了，当前节点已是局部最优")
