@@ -23,6 +23,7 @@ logger.addHandler(handler)
 active_ws = None
 scrape_active = False
 scrape_result = None
+scrape_process = None  # 保存子进程引用以便停止
 
 
 @asynccontextmanager
@@ -61,7 +62,7 @@ def get_output_dir():
 def run_scrape_sync(
     query, max_pins, min_saves, min_likes, min_comments, download_images
 ):
-    global scrape_active
+    global scrape_active, scrape_process
     scrape_active = True
     output_dir = get_output_dir()
     try:
@@ -89,7 +90,16 @@ def run_scrape_sync(
             output_dir,
         ]
         logger.info(f"Running: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        # 使用 Popen 以便可以终止进程
+        scrape_process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = scrape_process.communicate(timeout=600)
+        # 模拟 CompletedProcess 对象
+        class MockResult:
+            def __init__(self, stdout, stderr, returncode):
+                self.stdout = stdout
+                self.stderr = stderr
+                self.returncode = returncode
+        result = MockResult(result[0], result[1], scrape_process.returncode)
         logger.info(
             f"Scrape stdout: {result.stdout[-500:] if result.stdout else 'empty'}"
         )
@@ -128,6 +138,7 @@ def run_scrape_sync(
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         scrape_active = False
+        scrape_process = None
 
 
 @app.post("/api/scrape")
@@ -197,9 +208,41 @@ async def status():
 
 @app.post("/api/stop")
 async def stop():
-    global scrape_active
+    global scrape_active, scrape_process
+    if not scrape_active:
+        return {"status": "idle", "message": "没有正在运行的任务"}
+    
+    logger.info("收到停止请求，尝试终止爬虫进程...")
+    
+    # 1. 设置标志位
     scrape_active = False
-    return {"status": "stopping"}
+    
+    # 2. 如果有正在运行的子进程，终止它
+    if scrape_process is not None:
+        try:
+            # 先尝试温和地终止
+            scrape_process.terminate()
+            logger.info("已发送终止信号给爬虫进程")
+            
+            # 等待 3 秒让进程自行退出
+            try:
+                scrape_process.wait(timeout=3)
+                logger.info("爬虫进程已正常退出")
+            except subprocess.TimeoutExpired:
+                # 如果 3 秒后还没退出，强制杀死
+                logger.warning("爬虫进程未在 3 秒内退出，强制杀死...")
+                scrape_process.kill()
+                scrape_process.wait(timeout=2)
+                logger.info("爬虫进程已被强制杀死")
+            
+            scrape_process = None
+            return {"status": "stopped", "message": "任务已成功停止"}
+        except Exception as e:
+            logger.error(f"终止进程时出错：{e}")
+            return {"status": "error", "message": f"停止失败：{str(e)}"}
+    else:
+        logger.info("没有找到正在运行的爬虫进程")
+        return {"status": "stopped", "message": "任务已停止（无进程需要终止）"}
 
 
 @app.websocket("/ws")
