@@ -569,7 +569,6 @@ class PinterestScraper:
                     current_saves = saves  # 记录当前节点的 saves，作为后续爬坡的对比基准
 
                     # 2. 判断是否收集当前节点：只要 saves >= min_saves 且媒体类型匹配，就无脑收集
-                    # 【修复】climb_mode 模式下也需要检查 min_saves，否则会导致无限制收集
                     media_match = True
                     if self.media_type == "images" and is_video: media_match = False
                     if self.media_type == "video" and not is_video: media_match = False
@@ -603,7 +602,7 @@ class PinterestScraper:
                             if qualified_count >= target_count:
                                 print(f"  [深度{depth}] 已收集{target_count}个，停止任务")
                                 self._navigate_back_to_search(self._current_keyword)
-                                break
+                                return list(collected_pins.values())  # 直接返回结果，彻底退出函数
 
                     # 3. 核心爬坡寻路逻辑：寻找下一个跳板 (决定是否要在下一个 pin 的详情页继续)
                     # 规则：点进相似推荐，提取 saves，只有 saves > current_saves 才留下，否则后退。
@@ -743,6 +742,11 @@ class PinterestScraper:
                         time.sleep(random.uniform(2, 4))
                     except Exception:
                         pass
+
+                # 检查是否需要完全停止（每次内层循环结束后都要检查）
+                if qualified_count >= target_count:
+                    print(f"已收集{target_count}个，完全停止")
+                    return list(collected_pins.values())
 
                 time.sleep(random.uniform(2, 4))
 
