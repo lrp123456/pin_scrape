@@ -1,4 +1,30 @@
-(api_service.py is a source file, so no need to add anything to .gitignore)
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# No changes needed - only source file was modified"__pycache__/" 
-"*.pyc" 
+# Environment
+.venv/
+venv/
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# Editors
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/
+target/
+```

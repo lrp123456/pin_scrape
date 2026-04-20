@@ -2,6 +2,8 @@
 
 import json
 import random
+import signal
+import sys
 import time
 import urllib.parse
 from pathlib import Path
@@ -10,6 +12,20 @@ from typing import Callable, List, Optional
 from playwright.sync_api import Browser, BrowserContext, Page, sync_playwright
 
 from shared.models import Pin
+
+# 全局停止标志
+_stop_requested = False
+
+def signal_handler(signum, frame):
+    """处理停止信号"""
+    global _stop_requested
+    print("\n⚠️  收到停止信号，正在安全退出...")
+    _stop_requested = True
+    sys.exit(0)
+
+# 注册信号处理器
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 
 
 def apply_stealth(page: Page):
@@ -449,6 +465,7 @@ class PinterestScraper:
             min_saves: 最小保存数阈值
             climb_mode: 纯爬坡模式，不检查min_saves，持续找更优直到收集够数量
         """
+        global _stop_requested
         collected_pins = {}  # 存所有收集到的 pin（含相似推荐）
         qualified_count = 0  # 只统计真正达标且符合媒体类型的 pin 数量
         visited_ids = set()
@@ -482,6 +499,11 @@ class PinterestScraper:
             random.shuffle(search_pin_ids)
 
             while qualified_count < target_count and attempt < max_attempts:
+                # 检查全局停止标志
+                if _stop_requested:
+                    print("\n⚠️  检测到停止请求，正在退出探索模式...")
+                    return list(collected_pins.values())
+                
                 attempt += 1
 
                 # 从搜索页选一个未访问的起始pin
@@ -547,6 +569,11 @@ class PinterestScraper:
 
                 while depth < max_depth and qualified_count < target_count:
                     depth += 1
+                    # 检查全局停止标志
+                    if _stop_requested:
+                        print("\n⚠️  检测到停止请求，正在退出深度探索...")
+                        return list(collected_pins.values())
+                    
 
                     if current_pin_id in visited_ids and not found_qualified:
                         print(f"  [深度{depth}] pin {current_pin_id} 已访问过，跳过")
@@ -643,6 +670,11 @@ class PinterestScraper:
                     # 持续循环：检查 5 个 → 没找到更优 → PGDN 滚动 → 排除已检查的 → 再检查新的 5 个 → 直到找到更优或确认没有更多推荐
                     while not upgraded:
                         # 遍历未访问的相似推荐，最多检查 max_checks_before_scroll 个
+                        # 检查全局停止标志
+                        if _stop_requested:
+                            print("\n⚠️  检测到停止请求，正在退出爬坡寻路...")
+                            return list(collected_pins.values())
+                        
                         batch_checked = 0
                         for sp in unvisited[:max_checks_before_scroll]:
                             if upgraded:
