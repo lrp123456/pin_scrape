@@ -8,6 +8,7 @@ from dataclasses import dataclass, asdict
 
 class Stage(str, Enum):
     """进度阶段枚举"""
+
     IDLE = "idle"
     INITIALIZING = "initializing"
     STARTING_CHROME = "starting_chrome"
@@ -22,6 +23,7 @@ class Stage(str, Enum):
 @dataclass
 class ProgressState:
     """进度状态数据类"""
+
     running: bool = False
     stage: str = Stage.IDLE.value
     percentage: int = 0
@@ -31,6 +33,8 @@ class ProgressState:
     message: str = ""
     start_time: Optional[str] = None
     error: Optional[str] = None
+    output_dir: str = ""
+    collected_count: int = 0
 
     def to_dict(self):
         """转换为字典"""

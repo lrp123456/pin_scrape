@@ -16,6 +16,17 @@ DEFAULT_CONFIG = {
     "chrome_port": 9222,
     "chrome_headless": False,
     "chrome_profile": "",
+    "proxy_host": "127.0.0.1",
+    "proxy_port": 7897,
+    "proxy_enabled": False,
+    # 以下字段用于托盘应用兼容性
+    "api_port": 8000,
+    "default_query": "",
+    "default_max_pins": 100,
+    "default_min_saves": 0,
+    "default_min_likes": 0,
+    "default_min_comments": 0,
+    "auto_start": False,
 }
 
 

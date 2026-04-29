@@ -113,6 +113,7 @@ class ChromeLauncher:
         timeout: int = 10,
         user_data_dir: Optional[str] = None,
         headless: bool = True,
+        proxy_server: Optional[str] = None,
     ):
         """
         初始化 Chrome Launcher
@@ -122,6 +123,8 @@ class ChromeLauncher:
             timeout: 等待 Chrome 启动的超时时间（秒）
             user_data_dir: 用户数据目录路径（持久化登录状态）。如果为 None，使用默认持久化目录
             headless: 是否以无头模式启动（默认 True，适合容器环境）
+            proxy_server: HTTP/SOCKS5 代理地址，如 "socks5://proxy.example.com:1080"
+                         也支持从环境变量 HTTP_PROXY 自动读取
         """
         self.port = port
         self.timeout = timeout
@@ -137,41 +140,43 @@ class ChromeLauncher:
             self._is_temp_profile = False  # 所有指定目录都是持久化的
 
         self.headless = headless
+        self.proxy_server = proxy_server
 
     def __enter__(self) -> "ChromeLauncher":
-        """启动 Chrome 并等待 CDP 端点就绪"""
+        if self._is_cdp_available():
+            print(f"检测到已有 Chrome 在端口 {self.port} 运行，将直接连接")
+            self.chrome_path = find_chrome_executable()
+            self.process = None
+            return self
+
         self.chrome_path = find_chrome_executable()
 
-        # 创建用户数据目录（如果不存在）
         if self.user_data_dir:
             os.makedirs(self.user_data_dir, exist_ok=True)
             print(f"使用Chrome配置目录: {self.user_data_dir}")
 
-        # 启动 Chrome
         self.process = self._launch_chrome()
-
-        # 等待 CDP 端点就绪
         self._wait_for_cdp()
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """关闭 Chrome 进程"""
-        # 持久化配置不关闭浏览器，保留登录状态
-        if not self._is_temp_profile:
-            print("Chrome配置已保存，浏览器保持运行")
-            return
+    def _is_cdp_available(self) -> bool:
+        try:
+            response = requests.get(f"{self.endpoint}/json/version", timeout=2)
+            return response.status_code == 200
+        except requests.exceptions.RequestException:
+            return False
 
-        # 临时配置才关闭进程
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if self.process and self.process.poll() is None:
-            # 进程仍在运行，尝试优雅关闭
             try:
                 self.process.terminate()
                 self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                # 超时后强制终止
                 self.process.kill()
                 self.process.wait()
+        elif self._is_cdp_available() and not self._is_temp_profile:
+            print("Chrome配置已保存，浏览器保持运行")
 
     @property
     def endpoint(self) -> str:
@@ -188,7 +193,6 @@ class ChromeLauncher:
         cmd = [
             self.chrome_path,
             f"--remote-debugging-port={self.port}",
-            "--remote-debugging-address=0.0.0.0",
             f"--user-data-dir={self.user_data_dir}",
             "--no-first-run",
             "--no-default-browser-check",
@@ -198,42 +202,48 @@ class ChromeLauncher:
             "--disable-background-networking",
             "--disable-sync",
             "--metrics-recording-only",
-            "--disable-default-apps",
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-blink-features=AutomationControlled",
             "--disable-features=IsolateOrigins,site-per-process",
+            "--disable-http2",
+            "--disable-quic",
+            "--ignore-certificate-errors",
+            "--allow-insecure-localhost",
+            "--disable-web-security",
+            "--disable-features=BlockInsecurePrivateNetworkRequests",
         ]
 
-        # 检查代理环境变量并配置 Chrome 代理
-        http_proxy = os.environ.get("HTTP_PROXY") or os.environ.get("http_proxy")
-        if http_proxy:
+        import platform
+        if platform.system() != "Windows":
+            cmd.append("--remote-debugging-address=0.0.0.0")
+
+        # 代理配置：参数优先，其次环境变量
+        proxy = self.proxy_server or os.environ.get("HTTP_PROXY") or os.environ.get("http_proxy")
+        if proxy:
             cmd.extend(
                 [
-                    f"--proxy-server={http_proxy}",
+                    f"--proxy-server={proxy}",
                     "--proxy-bypass-list=localhost,127.0.0.1",
                 ]
             )
 
         if self.headless:
-            cmd.append("--headless")
+            cmd.append("--headless=new")
+            creation_flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+            popen_kwargs = {
+                "stdout": subprocess.DEVNULL,
+                "stderr": subprocess.DEVNULL,
+                "close_fds": True,
+            }
+        else:
+            creation_flags = 0
+            popen_kwargs = {}
 
         cmd.append("about:blank")
 
-        # 根据操作系统设置进程创建参数
-        # Windows 使用 DETACHED_PROCESS，Linux/macOS 使用 start_new_session
-        import platform
-
-        popen_kwargs = {
-            "stdout": subprocess.DEVNULL,
-            "stderr": subprocess.DEVNULL,
-            "close_fds": True,
-        }
-
         if platform.system() == "Windows":
-            popen_kwargs["creationflags"] = (
-                subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
-            )
+            popen_kwargs["creationflags"] = creation_flags
         else:
             popen_kwargs["start_new_session"] = True
 
@@ -242,34 +252,34 @@ class ChromeLauncher:
         return process
 
     def _wait_for_cdp(self):
-        """
-        等待 CDP 端点就绪
-
-        Raises:
-            TimeoutError: 如果 Chrome 在超时时间内未启动
-        """
         url = f"{self.endpoint}/json/version"
-        max_attempts = self.timeout * 2  # 每 0.5 秒尝试一次
+        max_attempts = self.timeout * 2
 
         for attempt in range(max_attempts):
             try:
                 response = requests.get(url, timeout=1)
                 if response.status_code == 200:
-                    # CDP 端点已就绪
                     return
             except requests.exceptions.RequestException:
-                # 端点未就绪，继续等待
                 pass
 
-            # 检查进程是否仍在运行
             if self.process.poll() is not None:
-                raise RuntimeError(
-                    f"Chrome 进程意外退出，退出码: {self.process.returncode}"
-                )
+                import platform
+                if platform.system() == "Windows":
+                    raise RuntimeError(
+                        f"Chrome 进程意外退出，退出码: {self.process.returncode}\n"
+                        f"可能原因：\n"
+                        f"1. Chrome 已在运行且使用了相同的配置目录: {self.user_data_dir}\n"
+                        f"2. 端口 {self.port} 被占用\n"
+                        f"3. 请关闭所有 Chrome 窗口后重试，或使用 --connect 连接到已有浏览器"
+                    )
+                else:
+                    raise RuntimeError(
+                        f"Chrome 进程意外退出，退出码: {self.process.returncode}"
+                    )
 
             time.sleep(0.5)
 
-        # 超时
         raise TimeoutError(
             f"Chrome 在 {self.timeout} 秒内未能启动。\n"
             f"请检查端口 {self.port} 是否被占用，或尝试使用其他端口。"

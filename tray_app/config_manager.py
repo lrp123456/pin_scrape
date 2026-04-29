@@ -11,18 +11,21 @@ class ConfigManager:
     """配置文件管理器"""
 
     DEFAULT_CONFIG = {
-        'api_port': 8000,
-        'output_dir': str(Path.home() / 'PinterestScraper' / 'output'),
-        'chrome_port': 9222,
-        'chrome_headless': False,
-        'chrome_profile': '',
-        'default_query': '',
-        'default_max_pins': 100,
-        'default_min_saves': 0,
-        'default_min_likes': 0,
-        'default_min_comments': 0,
-        'auto_start': False,
-        'custom_icon_path': '',
+        "api_port": 8000,
+        "output_dir": str(Path.home() / "PinterestScraper" / "output"),
+        "chrome_port": 9222,
+        "chrome_headless": False,
+        "chrome_profile": "",
+        "default_query": "",
+        "default_max_pins": 100,
+        "default_min_saves": 0,
+        "default_min_likes": 0,
+        "default_min_comments": 0,
+        "auto_start": False,
+        "custom_icon_path": "",
+        "proxy_enabled": False,
+        "proxy_host": "127.0.0.1",
+        "proxy_port": 7897,
     }
 
     def __init__(self, config_path: Path = None):
@@ -30,11 +33,11 @@ class ConfigManager:
         初始化配置管理器
 
         Args:
-            config_path: 配置文件路径，默认为%APPDATA%/PinterestScraper/config.json
+            config_path: 配置文件路径，默认为 ~/.pinterest_scraper_config.json
         """
         if config_path is None:
-            app_data = Path.home() / 'AppData' / 'Roaming'
-            config_path = app_data / 'PinterestScraper' / 'config.json'
+            # 统一使用 shared/config_manager.py 的配置路径
+            config_path = Path.home() / ".pinterest_scraper_config.json"
 
         self.config_path = config_path
         self.config = self._load_config()
@@ -43,7 +46,7 @@ class ConfigManager:
         """加载配置"""
         if self.config_path.exists():
             try:
-                with open(self.config_path, 'r', encoding='utf-8') as f:
+                with open(self.config_path, "r", encoding="utf-8") as f:
                     config = json.load(f)
                     # 合并默认配置
                     return {**self.DEFAULT_CONFIG, **config}
@@ -66,7 +69,7 @@ class ConfigManager:
         """保存配置"""
         try:
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.config_path, 'w', encoding='utf-8') as f:
+            with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"保存配置失败: {e}")
@@ -80,12 +83,12 @@ class ConfigManager:
         try:
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
-                r'Software\Microsoft\Windows\CurrentVersion\Run',
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
                 0,
-                winreg.KEY_SET_VALUE
+                winreg.KEY_SET_VALUE,
             )
 
-            app_name = 'PinterestScraper'
+            app_name = "PinterestScraper"
             exe_path = sys.executable  # 当前exe路径
 
             if enable:
@@ -99,7 +102,7 @@ class ConfigManager:
             winreg.CloseKey(key)
 
             # 更新配置
-            self.set('auto_start', enable)
+            self.set("auto_start", enable)
 
         except Exception as e:
             print(f"设置开机自启失败: {e}")
@@ -113,13 +116,13 @@ class ConfigManager:
         try:
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
-                r'Software\Microsoft\Windows\CurrentVersion\Run',
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
                 0,
-                winreg.KEY_READ
+                winreg.KEY_READ,
             )
 
             try:
-                value, _ = winreg.QueryValueEx(key, 'PinterestScraper')
+                value, _ = winreg.QueryValueEx(key, "PinterestScraper")
                 return True
             except FileNotFoundError:
                 return False

@@ -40,7 +40,6 @@ class ScrapeRequest(BaseModel):
     query: str
     max_pins: int = 100
     min_saves: int = 0
-    min_likes: int = 0
     min_comments: int = 0
     download_images: bool = True
 
@@ -60,7 +59,7 @@ def get_output_dir():
 
 
 def run_scrape_sync(
-    query, max_pins, min_saves, min_likes, min_comments, download_images
+    query, max_pins, min_saves, min_comments, download_images
 ):
     global scrape_active, scrape_process
     scrape_active = True
@@ -77,8 +76,6 @@ def run_scrape_sync(
             str(max_pins),
             "--min-saves",
             str(min_saves),
-            "--min-likes",
-            str(min_likes),
             "--min-comments",
             str(min_comments),
             "--connect",
@@ -154,7 +151,6 @@ async def scrape(req: ScrapeRequest):
         req.query,
         req.max_pins,
         req.min_saves,
-        req.min_likes,
         req.min_comments,
         req.download_images,
     )
@@ -174,7 +170,6 @@ async def scrape_async(req: ScrapeRequest):
                 req.query,
                 req.max_pins,
                 req.min_saves,
-                req.min_likes,
                 req.min_comments,
                 req.download_images,
             )

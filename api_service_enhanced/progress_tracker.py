@@ -30,6 +30,9 @@ class ProgressTracker:
             if self.PROGRESS_FILE.exists():
                 with open(self.PROGRESS_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
+                    # 确保 output_dir 被正确加载（旧文件可能没有这个字段）
+                    if "output_dir" not in data:
+                        data["output_dir"] = ""
                     self.progress = ProgressState.from_dict(data)
                     if reset_running:
                         self.progress.running = False
@@ -46,7 +49,7 @@ class ProgressTracker:
             except Exception as e:
                 print(f"保存进度文件失败: {e}")
 
-    def start_task(self, query: str, total: int):
+    def start_task(self, query: str, total: int, output_dir: str = ""):
         """开始任务"""
         with self.lock:
             self.progress = ProgressState(
@@ -59,6 +62,8 @@ class ProgressTracker:
                 message="初始化中...",
                 start_time=datetime.now().isoformat(),
                 error=None,
+                output_dir=output_dir,
+                collected_count=0,
             )
         self._save_progress()
 
@@ -70,6 +75,12 @@ class ProgressTracker:
             self.progress.total = total
             self.progress.percentage = int((current / total * 100) if total > 0 else 0)
             self.progress.message = message
+        self._save_progress()
+
+    def update_collected(self, count: int):
+        """更新已收集数量"""
+        with self.lock:
+            self.progress.collected_count = count
         self._save_progress()
 
     def complete(self):

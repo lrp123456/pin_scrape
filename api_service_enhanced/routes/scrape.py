@@ -19,7 +19,6 @@ class ScrapeRequest(BaseModel):
     query: str
     max_pins: int = 100
     min_saves: int = 0
-    min_likes: int = 0
     min_comments: int = 0
     output_dir: Optional[str] = None
     chrome_port: int = 9222
@@ -30,6 +29,12 @@ class ScrapeRequest(BaseModel):
     download_images: bool = True
     climb_mode: bool = False
     use_folder_structure: bool = False
+    enable_ai_filter: bool = True  # AI 筛选开关，默认开启
+    ai_filter_timeout: int = 180  # AI 筛选超时时间（秒）
+    site: str = "pinterest"  # pinterest, tianjin
+    max_gov_pages: int = 100  # 住建委最大翻页数（仅tianjin）
+    worker_id: Optional[str] = None  # 多 Worker 标识，如 "worker-1"
+    proxy_server: Optional[str] = None  # Chrome 代理，如 "socks5://proxy.example.com:1080"
 
 
 @router.post("/scrape")
@@ -87,6 +92,8 @@ async def scrape_async(req: ScrapeRequest):
         params["output_dir"] = "./output"
 
     # 启动后台线程
+    print(f"[API] 开始异步爬取: {params['query']}, AI筛选={params.get('enable_ai_filter', True)}")
+    
     def _run_in_background():
         task_manager.run_scrape(params)
 
@@ -97,4 +104,5 @@ async def scrape_async(req: ScrapeRequest):
         "status": "started",
         "message": "Scrape task started in background",
         "query": params["query"],
+        "ai_filter_enabled": params.get("enable_ai_filter", True),
     }

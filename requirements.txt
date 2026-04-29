@@ -14,6 +14,10 @@ aiofiles>=23.2.0
 # HTTP requests
 requests>=2.31.0
 
+# HTML parsing
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
 # System tray
 pystray>=0.19.5
 Pillow>=10.1.0
@@ -23,3 +27,8 @@ psutil>=5.9.0
 
 # PyInstaller for packaging
 pyinstaller>=6.3.0
+
+# Captcha solving
+captcha-recognizer>=1.0.0
+opencv-python>=4.8.0
+numpy>=1.23.0

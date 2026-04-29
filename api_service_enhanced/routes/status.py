@@ -48,6 +48,9 @@ async def get_status():
         "percentage": progress["percentage"],
         "query": progress["query"],
         "message": progress["message"],
+        "collected_count": progress.get("collected_count", 0),
+        "current": progress.get("current", 0),
+        "total": progress.get("total", 0),
     }
 
 

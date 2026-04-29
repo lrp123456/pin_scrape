@@ -27,7 +27,8 @@ class ChromeManager:
         self.running = True
 
     def start_chrome(
-        self, port: int = 9222, profile: str = "", headless: bool = False
+        self, port: int = 9222, profile: str = "", headless: bool = False,
+        proxy_server: Optional[str] = None
     ) -> str:
         """启动Chrome
 
@@ -35,6 +36,7 @@ class ChromeManager:
             port: CDP端口
             profile: Chrome配置目录路径
             headless: 是否无头模式
+            proxy_server: 代理服务器地址（如 socks5://proxy:1080）
 
         Returns:
             CDP端点URL
@@ -64,6 +66,7 @@ class ChromeManager:
                     timeout=10,
                     user_data_dir=profile if profile else None,
                     headless=headless,
+                    proxy_server=proxy_server,
                 )
                 self.chrome_launcher.__enter__()
                 self.last_used_time = time.time()

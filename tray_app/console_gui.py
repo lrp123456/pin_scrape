@@ -1,5 +1,10 @@
 """Pinterest爬虫控制台"""
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 import requests
@@ -60,83 +65,7 @@ class ScraperConsole:
         self.root.mainloop()
 
     def _on_double_click(self, event):
-        """双击事件处理 - 重新加载配置"""
-        from shared.config_manager import get_config, save_config
-
-        config = get_config()
-
-        # 弹出配置修改对话框
-        config_window = tk.Toplevel(self.root)
-        config_window.title("高级系统配置")
-        config_window.geometry("400x350")
-        config_window.transient(self.root)
-        config_window.grab_set()
-
-        # Redis配置输入框
-        ttk.Label(config_window, text="Redis主机:").grid(
-            row=0, column=0, sticky="w", padx=10, pady=5
-        )
-        redis_host_var = tk.StringVar(value=config.get("redis_host", "localhost"))
-        ttk.Entry(config_window, textvariable=redis_host_var, width=40).grid(
-            row=0, column=1, padx=10, pady=5
-        )
-
-        ttk.Label(config_window, text="Redis端口:").grid(
-            row=1, column=0, sticky="w", padx=10, pady=5
-        )
-        redis_port_var = tk.IntVar(value=config.get("redis_port", 6379))
-        ttk.Entry(config_window, textvariable=redis_port_var, width=40).grid(
-            row=1, column=1, padx=10, pady=5
-        )
-
-        ttk.Label(config_window, text="Redis数据库:").grid(
-            row=2, column=0, sticky="w", padx=10, pady=5
-        )
-        redis_db_var = tk.IntVar(value=config.get("redis_db", 0))
-        ttk.Entry(config_window, textvariable=redis_db_var, width=40).grid(
-            row=2, column=1, padx=10, pady=5
-        )
-
-        ttk.Label(config_window, text="Redis密码:").grid(
-            row=3, column=0, sticky="w", padx=10, pady=5
-        )
-        redis_password_var = tk.StringVar(value=config.get("redis_password", ""))
-        ttk.Entry(
-            config_window, textvariable=redis_password_var, width=40, show="*"
-        ).grid(row=3, column=1, padx=10, pady=5)
-
-        # 输出路径配置
-        ttk.Label(config_window, text="输出路径:").grid(
-            row=4, column=0, sticky="w", padx=10, pady=5
-        )
-        output_dir_var = tk.StringVar(value=config.get("output_dir", ""))
-        ttk.Entry(config_window, textvariable=output_dir_var, width=40).grid(
-            row=4, column=1, padx=10, pady=5
-        )
-
-        def save_and_test():
-            """保存配置并测试连接"""
-            new_config = {
-                "redis_host": redis_host_var.get(),
-                "redis_port": redis_port_var.get(),
-                "redis_db": redis_db_var.get(),
-                "redis_password": redis_password_var.get(),
-                "output_dir": output_dir_var.get(),
-            }
-
-            # 测试Redis连接
-            from shared.config_manager import test_redis_connection
-
-            if test_redis_connection(new_config):
-                save_config(new_config)
-                messagebox.showinfo("成功", "配置保存成功，Redis连接正常！")
-                config_window.destroy()
-            else:
-                messagebox.showerror("错误", "Redis连接失败，请检查配置")
-
-        ttk.Button(config_window, text="保存并测试", command=save_and_test).grid(
-            row=5, column=1, pady=10, sticky="e"
-        )
+        ConfigDialog(self.root)
 
     def _create_input_panel(self, parent):
         """创建输入面板"""
@@ -563,6 +492,212 @@ class ScraperConsole:
         output_path = Path.home() / "PinterestScraper" / "output"
         output_path.mkdir(parents=True, exist_ok=True)
         subprocess.run(["explorer", str(output_path)])
+
+
+class ConfigDialog:
+    def __init__(self, parent):
+        self.parent = parent
+        from shared.config_manager import get_config, save_config, test_redis_connection
+
+        self.get_config = get_config
+        self.save_config = save_config
+        self.test_redis_connection = test_redis_connection
+        self.config = self.get_config()
+        self.window = tk.Toplevel(parent)
+        self.window.title("高级系统配置")
+        self.window.geometry("550x650")
+        self.window.transient(parent)
+        self.window.grab_set()
+        notebook = ttk.Notebook(self.window)
+        notebook.pack(fill="both", expand=True, padx=10, pady=10)
+        self._create_redis_page(notebook)
+        self._create_proxy_page(notebook)
+        self._create_output_page(notebook)
+        button_frame = ttk.Frame(self.window)
+        button_frame.pack(fill="x", padx=10, pady=10)
+        ttk.Button(button_frame, text="💾 保存", command=self._save_config).pack(
+            side="right", padx=5
+        )
+        ttk.Button(button_frame, text="取消", command=self.window.destroy).pack(
+            side="right", padx=5
+        )
+
+    def _create_redis_page(self, notebook):
+        redis_frame = ttk.Frame(notebook, padding="10")
+        notebook.add(redis_frame, text="Redis配置")
+        ttk.Label(redis_frame, text="Redis连接配置", font=("", 10, "bold")).grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, 10)
+        )
+        ttk.Label(redis_frame, text="主机:").grid(row=1, column=0, sticky="w", pady=5)
+        self.redis_host_var = tk.StringVar(
+            value=self.config.get("redis_host", "localhost")
+        )
+        ttk.Entry(redis_frame, textvariable=self.redis_host_var, width=35).grid(
+            row=1, column=1, sticky="w", pady=5, padx=5
+        )
+        ttk.Label(redis_frame, text="端口:").grid(row=2, column=0, sticky="w", pady=5)
+        self.redis_port_var = tk.IntVar(value=self.config.get("redis_port", 6379))
+        ttk.Entry(redis_frame, textvariable=self.redis_port_var, width=35).grid(
+            row=2, column=1, sticky="w", pady=5, padx=5
+        )
+        ttk.Label(redis_frame, text="数据库:").grid(row=3, column=0, sticky="w", pady=5)
+        self.redis_db_var = tk.IntVar(value=self.config.get("redis_db", 0))
+        ttk.Entry(redis_frame, textvariable=self.redis_db_var, width=35).grid(
+            row=3, column=1, sticky="w", pady=5, padx=5
+        )
+        ttk.Label(redis_frame, text="密码:").grid(row=4, column=0, sticky="w", pady=5)
+        self.redis_password_var = tk.StringVar(
+            value=self.config.get("redis_password", "")
+        )
+        ttk.Entry(
+            redis_frame, textvariable=self.redis_password_var, width=35, show="*"
+        ).grid(row=4, column=1, sticky="w", pady=5, padx=5)
+        redis_btn_frame = ttk.Frame(redis_frame)
+        redis_btn_frame.grid(row=5, column=0, columnspan=2, sticky="w", pady=10)
+        ttk.Button(redis_btn_frame, text="🔗 测试连接", command=self._test_redis).pack(
+            side="left", padx=5
+        )
+        ttk.Button(
+            redis_btn_frame, text="🗑️ 清空已收集", command=self._clear_redis
+        ).pack(side="left", padx=5)
+        ttk.Button(redis_btn_frame, text="👁️ 查看内容", command=self._view_redis).pack(
+            side="left", padx=5
+        )
+        self.redis_status_label = ttk.Label(redis_frame, text="", foreground="gray")
+        self.redis_status_label.grid(row=6, column=0, columnspan=2, sticky="w", pady=5)
+        ttk.Label(redis_frame, text="已收集的Pin ID:").grid(
+            row=7, column=0, sticky="nw", pady=5
+        )
+        self.redis_pins_text = scrolledtext.ScrolledText(
+            redis_frame, width=50, height=15, font=("Consolas", 8)
+        )
+        self.redis_pins_text.grid(row=8, column=0, columnspan=2, sticky="nsew", pady=5)
+        redis_frame.rowconfigure(8, weight=1)
+
+    def _create_proxy_page(self, notebook):
+        proxy_frame = ttk.Frame(notebook, padding="10")
+        notebook.add(proxy_frame, text="代理配置")
+        ttk.Label(proxy_frame, text="HTTP代理设置", font=("", 10, "bold")).grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, 10)
+        )
+        self.proxy_enabled_var = tk.BooleanVar(
+            value=self.config.get("proxy_enabled", False)
+        )
+        ttk.Checkbutton(
+            proxy_frame, text="启用代理", variable=self.proxy_enabled_var
+        ).grid(row=1, column=0, columnspan=2, sticky="w", pady=5)
+        ttk.Label(proxy_frame, text="代理主机:").grid(
+            row=2, column=0, sticky="w", pady=5
+        )
+        self.proxy_host_var = tk.StringVar(
+            value=self.config.get("proxy_host", "127.0.0.1")
+        )
+        ttk.Entry(proxy_frame, textvariable=self.proxy_host_var, width=35).grid(
+            row=2, column=1, sticky="w", pady=5, padx=5
+        )
+        ttk.Label(proxy_frame, text="代理端口:").grid(
+            row=3, column=0, sticky="w", pady=5
+        )
+        self.proxy_port_var = tk.IntVar(value=self.config.get("proxy_port", 7897))
+        ttk.Entry(proxy_frame, textvariable=self.proxy_port_var, width=35).grid(
+            row=3, column=1, sticky="w", pady=5, padx=5
+        )
+        ttk.Label(
+            proxy_frame, text="提示: 默认端口7897为Clash代理端口", foreground="gray"
+        ).grid(row=4, column=0, columnspan=2, sticky="w", pady=5)
+
+    def _create_output_page(self, notebook):
+        output_frame = ttk.Frame(notebook, padding="10")
+        notebook.add(output_frame, text="输出配置")
+        ttk.Label(output_frame, text="输出路径配置", font=("", 10, "bold")).grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, 10)
+        )
+        ttk.Label(output_frame, text="输出目录:").grid(
+            row=1, column=0, sticky="w", pady=5
+        )
+        self.output_dir_var = tk.StringVar(value=self.config.get("output_dir", ""))
+        ttk.Entry(output_frame, textvariable=self.output_dir_var, width=35).grid(
+            row=1, column=1, sticky="w", pady=5, padx=5
+        )
+        ttk.Label(output_frame, text="Chrome配置目录:").grid(
+            row=2, column=0, sticky="w", pady=5
+        )
+        self.chrome_profile_var = tk.StringVar(
+            value=self.config.get("chrome_profile", "")
+        )
+        ttk.Entry(output_frame, textvariable=self.chrome_profile_var, width=35).grid(
+            row=2, column=1, sticky="w", pady=5, padx=5
+        )
+
+    def _test_redis(self):
+        test_config = {
+            "redis_host": self.redis_host_var.get(),
+            "redis_port": self.redis_port_var.get(),
+            "redis_db": self.redis_db_var.get(),
+            "redis_password": self.redis_password_var.get(),
+        }
+        if self.test_redis_connection(test_config):
+            self.redis_status_label.config(text="✓ 连接成功", foreground="green")
+        else:
+            self.redis_status_label.config(text="✗ 连接失败", foreground="red")
+
+    def _clear_redis(self):
+        from shared.models import Pin
+
+        if messagebox.askyesno("确认", "确定要清空Redis中所有已收集的Pin ID吗？"):
+            Pin.clear_collected()
+            self.redis_status_label.config(text="✓ 已清空", foreground="green")
+            self._load_redis_content()
+
+    def _view_redis(self):
+        self._load_redis_content()
+
+    def _load_redis_content(self):
+        from shared.models import Pin, get_redis_client, PIN_ID_SET_KEY
+
+        self.redis_pins_text.delete("1.0", tk.END)
+        client = get_redis_client(
+            {
+                "redis_host": self.redis_host_var.get(),
+                "redis_port": self.redis_port_var.get(),
+                "redis_db": self.redis_db_var.get(),
+                "redis_password": self.redis_password_var.get(),
+            }
+        )
+        if client is None:
+            self.redis_pins_text.insert("1.0", "无法连接到Redis\n")
+            return
+        try:
+            pin_ids = client.smembers(PIN_ID_SET_KEY)
+            count = client.scard(PIN_ID_SET_KEY)
+            self.redis_pins_text.delete("1.0", tk.END)
+            self.redis_pins_text.insert("1.0", f"已收集 {count} 个Pin ID:\n\n")
+            for pin_id in sorted(pin_ids):
+                self.redis_pins_text.insert(tk.END, f"{pin_id}\n")
+            self.redis_status_label.config(
+                text=f"共 {count} 个已收集Pin", foreground="blue"
+            )
+        except Exception as e:
+            self.redis_pins_text.delete("1.0", tk.END)
+            self.redis_pins_text.insert("1.0", f"读取失败: {e}\n")
+
+    def _save_config(self):
+        new_config = {
+            "redis_host": self.redis_host_var.get(),
+            "redis_port": self.redis_port_var.get(),
+            "redis_db": self.redis_db_var.get(),
+            "redis_password": self.redis_password_var.get(),
+            "output_dir": self.output_dir_var.get(),
+            "chrome_profile": self.chrome_profile_var.get(),
+            "chrome_port": self.config.get("chrome_port", 9222),
+            "chrome_headless": self.config.get("chrome_headless", False),
+            "proxy_host": self.proxy_host_var.get(),
+            "proxy_port": self.proxy_port_var.get(),
+            "proxy_enabled": self.proxy_enabled_var.get(),
+        }
+        self.save_config(new_config)
+        messagebox.showinfo("成功", "配置已保存！")
+        self.window.destroy()
 
 
 if __name__ == "__main__":

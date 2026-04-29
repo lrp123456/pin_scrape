@@ -22,9 +22,12 @@ venv/
 # Editors
 .vscode/
 .idea/
+redis_config.json
+ollama_config.json
 
 # Build artifacts
 dist/
-build/
+build/dist/
 target/
+output/
 ```

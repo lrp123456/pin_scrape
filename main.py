@@ -22,11 +22,25 @@ sys.path.insert(0, str(Path(__file__).parent))
 PROGRESS_FILE = os.getenv("PROGRESS_FILE", "")
 
 
-def update_progress(stage: str, current: int, total: int, message: str):
+def update_progress(
+    stage: str, current: int, total: int, message: str, output_dir: str = "", collected_count: int = 0
+):
     """更新进度文件"""
     if not PROGRESS_FILE:
         return
     try:
+        # 尝试读取现有进度，保留 output_dir 和 collected_count
+        existing_output_dir = output_dir
+        existing_collected = collected_count
+        try:
+            with open(PROGRESS_FILE, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+                existing_output_dir = existing.get("output_dir", output_dir)
+                if collected_count == 0:
+                    existing_collected = existing.get("collected_count", 0)
+        except:
+            pass
+
         progress = {
             "running": True,
             "stage": stage,
@@ -37,6 +51,8 @@ def update_progress(stage: str, current: int, total: int, message: str):
             "message": message,
             "start_time": datetime.now().isoformat(),
             "error": None,
+            "output_dir": existing_output_dir,
+            "collected_count": existing_collected if collected_count == 0 else collected_count,
         }
         with open(PROGRESS_FILE, "w", encoding="utf-8") as f:
             json.dump(progress, f, ensure_ascii=False)
@@ -50,20 +66,16 @@ def parse_args():
         description="Pinterest 搜索爬虫",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例:
-  # 方式1: 连接到已有浏览器（推荐，可绑过反爬检测）
-  # 首先以调试模式启动 Chrome:
-  #   chrome.exe --remote-debugging-port=9222
-  # 然后运行:
-  python main.py -q "cat" -n 100 --connect
+示例 (Pinterest):
+  python main.py -q "现代简约" -n 100 --connect --auto-launch --chrome-profile ./data/chrome-profile
 
-  # 方式2: 自动启动浏览器（可能被反爬检测）
-  python main.py -q "cat" -n 100
-  python main.py -q "dog" -n 200 --min-saves 50 --min-comments 10
+示例 (天津住宅户型图):
+  python main.py --site tianjin --connect --auto-launch --chrome-profile ./data/chrome-profile
+  python main.py --site tianjin --days-limit 90 --max-gov-pages 200 --connect --auto-launch
         """,
     )
 
-    parser.add_argument("-q", "--query", type=str, required=True, help="搜索关键词")
+    parser.add_argument("-q", "--query", type=str, default=None, help="搜索关键词 (Pinterest模式必填)")
 
     parser.add_argument(
         "-n", "--max-pins", type=int, default=100, help="最大爬取数量 (默认: 100)"
@@ -71,10 +83,6 @@ def parse_args():
 
     parser.add_argument(
         "--min-saves", type=int, default=0, help="save数筛选阈值 (默认: 0，不筛选)"
-    )
-
-    parser.add_argument(
-        "--min-likes", type=int, default=0, help="点赞数筛选阈值 (默认: 0，不筛选)"
     )
 
     parser.add_argument(
@@ -129,13 +137,166 @@ def parse_args():
         help="媒体类型筛选 all/images/video (默认: all)",
     )
 
+    parser.add_argument(
+        "--log-file",
+        type=str,
+        default=None,
+        help="日志文件路径 (默认: 不写入文件)",
+    )
+
+    parser.add_argument(
+        "--no-ai-filter",
+        dest="enable_ai_filter",
+        action="store_false",
+        help="禁用 AI 图片筛选。默认启用AI筛选，加此参数可关闭以排查崩溃是否与本地AI(Ollama)有关",
+    )
+    parser.set_defaults(enable_ai_filter=True)
+
+    parser.add_argument(
+        "--ai-filter-timeout",
+        type=int,
+        default=180,
+        help="AI 筛选超时时间（秒）(默认: 180)",
+    )
+
+    parser.add_argument(
+        "--site",
+        type=str,
+        default="pinterest",
+        choices=["pinterest", "tianjin"],
+        help="目标站点 (默认: pinterest)",
+    )
+
+    parser.add_argument(
+        "--max-gov-pages",
+        type=int,
+        default=100,
+        help="住建委最大翻页数 (仅tianjin站点)",
+    )
+
+    parser.add_argument(
+        "--days-limit",
+        type=int,
+        default=0,
+        help="只爬取近N天的住宅项目 (仅tianjin站点，0表示默认90天)",
+    )
+
+    parser.add_argument(
+        "--max-projects",
+        type=int,
+        default=40,
+        help="每个户型图源最大处理小区数 (仅tianjin站点，默认40)",
+    )
+
+    parser.add_argument(
+        "--sources",
+        nargs="+",
+        choices=["3vjia", "kujiale"],
+        default=["3vjia", "kujiale"],
+        help="户型图源列表 (仅tianjin站点，默认: 3vjia kujiale)",
+    )
+
+    # ── 多 Worker 参数 ──
+    parser.add_argument(
+        "--worker-id",
+        type=str,
+        default="worker-0",
+        help="Worker 标识（多 Worker 模式时使用，如 worker-1）",
+    )
+    parser.add_argument(
+        "--proxy-server",
+        type=str,
+        default=None,
+        help="Chrome 代理服务器地址，如 socks5://proxy.example.com:1080",
+    )
+
     return parser.parse_args()
+
+
+def run_tianjin_pipeline(args):
+    """运行天津住宅户型图三阶段管道"""
+    print("[main.py] 启动天津住宅户型图管道...")
+
+    if args.auto_launch and not args.connect:
+        print("错误: --auto-launch 必须配合 --connect 使用")
+        return 1
+
+    sys.path.insert(0, str(Path(__file__).parent))
+    from scrapers.pipeline import Pipeline
+
+    chrome_launcher = None
+    cdp_endpoint = None
+
+    if args.auto_launch:
+        from chrome_launcher import ChromeLauncher
+
+        try:
+            chrome_launcher = ChromeLauncher(
+                port=9222,
+                timeout=10,
+                user_data_dir=args.chrome_profile,
+                headless=not args.no_headless,
+                proxy_server=args.proxy_server,
+            )
+            chrome_launcher.__enter__()
+            cdp_endpoint = chrome_launcher.endpoint
+
+            if chrome_launcher.process:
+                if args.chrome_profile:
+                    print(f"已自动启动 Chrome (PID: {chrome_launcher.process.pid}) [配置目录: {args.chrome_profile}]")
+                else:
+                    print(f"已自动启动 Chrome (PID: {chrome_launcher.process.pid}) [临时配置]")
+            else:
+                print("已连接到已有的 Chrome 实例")
+
+            time.sleep(3)
+        except Exception as e:
+            print(f"自动启动 Chrome 失败: {e}")
+            if chrome_launcher:
+                chrome_launcher.__exit__(None, None, None)
+            return 1
+    elif args.connect:
+        cdp_endpoint = args.cdp_endpoint
+        print(f"连接到已有浏览器: {cdp_endpoint}")
+    else:
+        print("将自动启动临时浏览器实例（非连接模式）")
+
+    pipeline = Pipeline(
+        output_dir=args.output,
+        headless=not args.no_headless,
+        debug=args.debug,
+        cdp_endpoint=cdp_endpoint,
+        delay=3.0,
+        sources=args.sources,
+    )
+
+    try:
+        stats = pipeline.run(
+            max_gov_pages=args.max_gov_pages,
+            max_plans_per_project=20,
+            days_limit=args.days_limit,
+            max_projects_per_source=args.max_projects,
+        )
+    finally:
+        if chrome_launcher:
+            chrome_launcher.__exit__(None, None, None)
+
+    return 0
 
 
 def main():
     """主函数"""
     print("[main.py] 开始执行...")
     args = parse_args()
+
+    if args.site == "tianjin":
+        return run_tianjin_pipeline(args)
+
+    # Pinterest 模式必须提供 --query
+    if not args.query:
+        print("错误: Pinterest 模式必须提供 -q/--query 参数")
+        return 1
+
     print(
         f"[main.py] 参数解析完成: query={args.query}, max_pins={args.max_pins}, connect={args.connect}"
     )
@@ -145,13 +306,21 @@ def main():
         print("错误: --auto-launch 必须配合 --connect 使用")
         return 1
 
+    # 判断是否已包含时间戳子目录（API传入时已包含，CLI直接运行时需要创建）
     output_dir = Path(args.output)
+    if "_20" not in output_dir.name:
+        # CLI直接运行：创建带时间戳的子目录
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_query = "".join(
+            c for c in args.query if c.isalnum() or c in (" ", "_", "-")
+        ).strip().replace(" ", "_")
+        output_dir = output_dir / f"{safe_query}_{timestamp}"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"搜索关键词: {args.query}")
     print(f"最大爬取数量: {args.max_pins}")
     print(
-        f"筛选条件: saves >= {args.min_saves}, likes >= {args.min_likes}, comments >= {args.min_comments}"
+        f"筛选条件: saves >= {args.min_saves}, comments >= {args.min_comments}"
     )
     print(f"输出目录: {output_dir}")
     print("-" * 50)
@@ -170,17 +339,21 @@ def main():
                 timeout=10,
                 user_data_dir=args.chrome_profile,
                 headless=not args.no_headless,
+                proxy_server=args.proxy_server,
             )
             chrome_launcher.__enter__()
             cdp_endpoint = chrome_launcher.endpoint
 
-            if args.chrome_profile:
-                print(f"已自动启动 Chrome (PID: {chrome_launcher.process.pid})")
-                print(f"使用持久化配置: {args.chrome_profile}")
+            if chrome_launcher.process:
+                if args.chrome_profile:
+                    print(f"已自动启动 Chrome (PID: {chrome_launcher.process.pid})")
+                    print(f"使用持久化配置: {args.chrome_profile}")
+                else:
+                    print(
+                        f"已自动启动 Chrome (PID: {chrome_launcher.process.pid}) [临时配置]"
+                    )
             else:
-                print(
-                    f"已自动启动 Chrome (PID: {chrome_launcher.process.pid}) [临时配置]"
-                )
+                print("已连接到已有的 Chrome 实例")
 
             print(f"CDP 端点: {cdp_endpoint}")
         except Exception as e:
@@ -193,10 +366,28 @@ def main():
         print(f"CDP 端点: {cdp_endpoint}")
 
     try:
+        # 确定日志文件路径
+        log_file = args.log_file
+        if log_file is None and output_dir:
+            log_file = str(output_dir / "scraper.log")
+
         # 爬取数据
         print(f"[main.py] 初始化爬虫, cdp_endpoint={cdp_endpoint}")
+
+        # 确定 user_data_dir：优先使用 args.chrome_profile，否则使用默认目录
+        from chrome_launcher import ChromeLauncher
+        user_data_dir = args.chrome_profile or str(ChromeLauncher.DEFAULT_PROFILE_DIR)
+
         with PinterestScraper(
-            headless=not args.no_headless, debug=args.debug, cdp_endpoint=cdp_endpoint
+            headless=not args.no_headless,
+            debug=args.debug,
+            cdp_endpoint=cdp_endpoint,
+            log_file=log_file,
+            user_data_dir=user_data_dir,
+            enable_ai_filter=args.enable_ai_filter,
+            ai_filter_timeout=args.ai_filter_timeout,
+            worker_id=args.worker_id,
+            proxy_server=args.proxy_server,
         ) as scraper:
             print(f"[main.py] 爬虫初始化完成，开始搜索: {args.query}")
             update_progress("searching", 0, args.max_pins, f"正在搜索: {args.query}")
@@ -210,27 +401,21 @@ def main():
                 media_type=args.media_type,
             )
             print(f"[main.py] 搜索完成，收集到 {len(pins)} 个Pin")
+            
+            # 更新进度：显示已收集数量
+            update_progress(
+                "collecting",
+                len(pins),
+                args.max_pins,
+                f"搜索完成，已收集 {len(pins)} 个Pin",
+                collected_count=len(pins),
+            )
 
             if not pins:
                 print("未爬取到任何数据")
                 return 0
 
             total_pins = len(pins)
-
-            if args.min_saves > 0:
-                update_progress(
-                    "completed",
-                    total_pins,
-                    total_pins,
-                    f"探索完成，共收集 {total_pins} 个pin",
-                )
-            else:
-                update_progress(
-                    "enriching",
-                    total_pins,
-                    total_pins,
-                    f"已完成，收集到 {total_pins} 个pin",
-                )
 
             if args.min_saves == 0:
                 update_progress(
@@ -240,7 +425,7 @@ def main():
                     f"搜索完成，准备获取 {total_pins} 个详情...",
                 )
                 print(
-                    f"\n正在获取 {total_pins} 个 Pin 的详情（saves/likes/comments）..."
+                    f"\n正在获取 {total_pins} 个 Pin 的详情（saves/comments）..."
                 )
                 for i, pin in enumerate(pins):
                     print(
@@ -254,17 +439,14 @@ def main():
                             pin.description = details["description"]
                         if details.get("saves", 0) is not None:
                             pin.saves = details["saves"]
-                        if details.get("likes", 0) is not None:
-                            pin.likes = details["likes"]
                         if details.get("comments", 0) is not None:
                             pin.comments = details["comments"]
                         if details.get("pinner"):
                             pin.pinner = details["pinner"]
                         saves_str = f"{pin.saves:,}" if pin.saves else "0"
-                        likes_str = f"{pin.likes:,}" if pin.likes else "0"
                         comments_str = f"{pin.comments:,}" if pin.comments else "0"
                         print(
-                            f"    Saves: {saves_str} | Likes: {likes_str} | Comments: {comments_str}"
+                            f"    Saves: {saves_str} | Comments: {comments_str}"
                         )
                     else:
                         print(f"    无法获取详情")
@@ -300,14 +482,13 @@ def main():
             save_json(pins, str(output_dir / "data.json"), args.query)
 
         # 更新进度：正在下载图片
-        update_progress("downloading", 0, len(pins), "正在下载图片...")
+        update_progress("downloading", 0, len(pins), "正在下载图片...", collected_count=len(pins))
 
         # 筛选并下载图片
         downloader = ImageDownloader(str(output_dir))
         filtered_pins = downloader.filter_and_download(
             pins,
             min_saves=args.min_saves,
-            min_likes=args.min_likes,
             min_comments=args.min_comments,
         )
 
@@ -316,11 +497,6 @@ def main():
             save_filtered_json(
                 filtered_pins, str(output_dir / "filtered_data.json"), args.query
             )
-
-        # 更新进度：任务完成
-        update_progress(
-            "completed", len(pins), len(pins), f"任务完成! 总数据: {len(pins)} 条"
-        )
 
         print("-" * 50)
         print("爬取完成!")
@@ -337,6 +513,9 @@ def main():
         print(f"筛选数据: {output_dir / 'filtered_data.json'}")
         print(f"图片目录: {output_dir / 'images'}")
         print("[main.py] ✓ 所有任务完成，准备退出")
+        
+        # 更新进度为完成
+        update_progress("completed", len(filtered_pins), len(filtered_pins), "任务完成", collected_count=len(pins))
 
         print("[main.py] 退出，返回码: 0")
         return 0

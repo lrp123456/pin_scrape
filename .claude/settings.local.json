@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import py_compile; py_compile.compile\\('main.py', doraise=True\\); print\\('main.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('scraper.py', doraise=True\\); print\\('scraper.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('shared/models.py', doraise=True\\); print\\('models.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('shared/ollama_client.py', doraise=True\\); print\\('ollama_client.py OK'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('shared/ollama_config.py', doraise=True\\); print\\('ollama_config.py OK'\\)\")"
+    ]
+  }
+}

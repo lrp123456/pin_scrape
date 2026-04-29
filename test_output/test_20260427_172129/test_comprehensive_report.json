@@ -1,0 +1,234 @@
+{
+  "timestamp": "2026-04-27T17:24:46.275331",
+  "total": 25,
+  "passed": 25,
+  "failed": 0,
+  "skipped": 0,
+  "results": [
+    {
+      "module": "logic",
+      "name": "pin-model",
+      "description": "Pin 数据模型创建和序列化",
+      "passed": true,
+      "message": "Pin 模型创建和序列化正常 (saves=100)",
+      "error": null,
+      "duration": 0.07
+    },
+    {
+      "module": "logic",
+      "name": "pin-criteria",
+      "description": "Pin 筛选条件检查",
+      "passed": true,
+      "message": "筛选条件逻辑正常",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "logic",
+      "name": "pin-dedup",
+      "description": "内存去重逻辑",
+      "passed": true,
+      "message": "去重逻辑正常",
+      "error": null,
+      "duration": 5.02
+    },
+    {
+      "module": "logic",
+      "name": "url-parse",
+      "description": "Pin URL 格式解析",
+      "passed": true,
+      "message": "URL 解析正常 (4 种格式)",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "logic",
+      "name": "number-parse",
+      "description": "灵活数字解析（K/M 格式）",
+      "passed": true,
+      "message": "灵活数字解析正常 (8 种格式)",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "logic",
+      "name": "json-output",
+      "description": "JSON 输出处理",
+      "passed": true,
+      "message": "JSON 输出正常 (3 个 pins)",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "logic",
+      "name": "downloader-path",
+      "description": "下载器路径构造",
+      "passed": true,
+      "message": "下载器路径构造正常",
+      "error": null,
+      "duration": 0.18
+    },
+    {
+      "module": "ai",
+      "name": "ai-init",
+      "description": "AI Filter Manager 初始化",
+      "passed": true,
+      "message": "AIFilterManager 初始化成功 (Zhipu=True, NVIDIA=True, Ollama=True, 可用=3/3)",
+      "error": null,
+      "duration": 5.11
+    },
+    {
+      "module": "ai",
+      "name": "zhipu-health",
+      "description": "Zhipu GLM 健康检查",
+      "passed": true,
+      "message": "Zhipu GLM 健康检查通过",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "ai",
+      "name": "nvidia-health",
+      "description": "NVIDIA NIM 健康检查",
+      "passed": true,
+      "message": "NVIDIA NIM 健康检查通过",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "ai",
+      "name": "prompt-gen",
+      "description": "Prompt 模板生成",
+      "passed": true,
+      "message": "Prompt 模板生成正常 (Prompt长度=1019)",
+      "error": null,
+      "duration": 0.0
+    },
+    {
+      "module": "search",
+      "name": "search-load",
+      "description": "搜索页加载",
+      "passed": true,
+      "message": "搜索页加载成功 (https://kr.pinterest.com/search/pins/?q=design)",
+      "error": null,
+      "duration": 5.21
+    },
+    {
+      "module": "search",
+      "name": "search-pin-detect",
+      "description": "搜索页 Pin 检测",
+      "passed": true,
+      "message": "检测到 27 个 pin (示例: 873698396453731538, 1088463803711605345, 1067071705444551579)",
+      "error": null,
+      "duration": 7.79
+    },
+    {
+      "module": "search",
+      "name": "search-image-url",
+      "description": "搜索页图片 URL 提取",
+      "passed": true,
+      "message": "图片 URL 提取成功 (71 字节)",
+      "error": null,
+      "duration": 8.03
+    },
+    {
+      "module": "search",
+      "name": "scroll-collect",
+      "description": "滚动收集模式（3个 pin）",
+      "passed": true,
+      "message": "收集到 3 个 pin (4574037117... saves=0; 6876434368... saves=0; 3452291277... saves=0)",
+      "error": null,
+      "duration": 16.03
+    },
+    {
+      "module": "detail",
+      "name": "detail-navigate",
+      "description": "导航到详情页",
+      "passed": true,
+      "message": "进入详情页成功 (https://kr.pinterest.com/pin/873698396453731538/)",
+      "error": null,
+      "duration": 10.54
+    },
+    {
+      "module": "detail",
+      "name": "detail-extract",
+      "description": "详情页数据提取（DOM）",
+      "passed": true,
+      "message": "数据提取成功 (saves=202)",
+      "error": null,
+      "duration": 11.72
+    },
+    {
+      "module": "detail",
+      "name": "pws-data",
+      "description": "PWS_DATA 数据存在性",
+      "passed": true,
+      "message": "PWS_DATA 存在 (pins=0, PinResource=0)",
+      "error": null,
+      "duration": 10.94
+    },
+    {
+      "module": "detail",
+      "name": "detail-back",
+      "description": "详情页安全后退",
+      "passed": true,
+      "message": "后退成功 (https://kr.pinterest.com/pin/873698396453731538/... → https://kr.pinterest.com/search/pins/?q=design...)",
+      "error": null,
+      "duration": 11.05
+    },
+    {
+      "module": "stability",
+      "name": "alive-normal",
+      "description": "正常页面存活检测",
+      "passed": true,
+      "message": "正常页面存活检测通过",
+      "error": null,
+      "duration": 2.09
+    },
+    {
+      "module": "stability",
+      "name": "alive-blank",
+      "description": "about:blank 页面存活检测",
+      "passed": true,
+      "message": "about:blank 页面存活状态: True (正常应为 True)",
+      "error": null,
+      "duration": 1.07
+    },
+    {
+      "module": "stability",
+      "name": "back-normal",
+      "description": "连续搜索页后退",
+      "passed": true,
+      "message": "后退成功: 回到搜索页 a (https://kr.pinterest.com/search/pins/?q=a)",
+      "error": null,
+      "duration": 9.25
+    },
+    {
+      "module": "stability",
+      "name": "ensure-search",
+      "description": "_ensure_page_alive_and_on_search 恢复",
+      "passed": true,
+      "message": "页面恢复成功 (重新进入搜索页: https://kr.pinterest.com/search/pins/?q=a)",
+      "error": null,
+      "duration": 9.09
+    },
+    {
+      "module": "stability",
+      "name": "quick-scrape",
+      "description": "快速小规模抓取流程验证",
+      "passed": true,
+      "message": "快速抓取完成 (收集 2 个 pin, 页面存活)",
+      "error": null,
+      "duration": 49.86
+    },
+    {
+      "module": "stability",
+      "name": "stress-back",
+      "description": "连续多次后退压力测试",
+      "passed": true,
+      "message": "连续后退: 3/3 成功 (页面存活=True)",
+      "error": null,
+      "duration": 27.92
+    }
+  ]
+}

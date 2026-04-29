@@ -1,7 +1,7 @@
 # Pinterest Scraper - AGENTS KNOWLEDGE BASE
 
-**Generated:** 2026-04-17  
-**Stack:** Python + Playwright + FastAPI + PyStray  
+**Generated:** 2026-04-20
+**Stack:** Python + Playwright + FastAPI + PyStray
 **Purpose:** Pinterest image scraper with human-like browsing
 
 ---
@@ -28,7 +28,7 @@ Pinterest search scraper using Playwright for browser automation. Supports CLI, 
 ```
 .
 ├── main.py              # CLI entry
-├── scraper.py           # Core scraper logic (~1200 lines)
+├── scraper.py            # Core scraper logic (~2360 lines)
 ├── downloader.py        # Image downloader
 ├── api_service.py       # Basic FastAPI
 ├── api_service_enhanced/# Enhanced API service
@@ -41,9 +41,13 @@ Pinterest search scraper using Playwright for browser automation. Supports CLI, 
 │   ├── tray_icon.py     # Icon/menu handling
 │   ├── console_gui.py   # Web-based console
 │   └── process_manager.py# Process control
+├── scrapers/            # Multi-site scraper framework
+│   ├── __init__.py
+│   └── base.py          # BaseScraper abstract class
 ├── shared/              # Shared modules
 │   ├── models.py        # Pin dataclass
-│   └── config_schema.py # Config validation
+│   ├── config_manager.py# Config management
+│   └── progress_state.py# Progress state
 └── output.py            # JSON output handling
 ```
 
@@ -53,12 +57,13 @@ Pinterest search scraper using Playwright for browser automation. Supports CLI, 
 
 | Task | Location | Notes |
 |------|----------|-------|
-| Scrape logic | `scraper.py` | PinterestScraper class, 1200 lines |
+| Scrape logic | `scraper.py` | PinterestScraper class, ~2360 lines |
 | CLI args | `main.py:18-89` | parse_args() function |
 | API routes | `api_service_enhanced/routes/` | scrape.py, status.py, config.py |
 | Models | `shared/models.py` | Pin dataclass |
 | Tray GUI | `tray_app/console_gui.py` | Web-based console UI |
 | Chrome mgmt | `chrome_launcher.py` | Chrome debug launcher |
+| Multi-site | `scrapers/base.py` | BaseScraper for extending |
 
 ---
 
@@ -71,6 +76,7 @@ Pinterest search scraper using Playwright for browser automation. Supports CLI, 
 | `TaskManager` | `api_service_enhanced/task_manager.py` | Async task control |
 | `ChromeManager` | `api_service_enhanced/chrome_manager.py` | Browser lifecycle |
 | `TrayIconManager` | `tray_app/tray_icon.py` | System tray UI |
+| `BaseScraper` | `scrapers/base.py` | Abstract base for multi-site |
 
 ---
 
@@ -100,7 +106,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 - **Don't use sync_playwright in async contexts** - causes deadlocks
 - **Don't skip stealth mode** - scraper.py:apply_stealth() required
 - **Don't forget path insertion** - modules won't import without sys.path fix
-- **Don't modify scraper.py without testing** - 1200 lines, complex flow
+- **Don't modify scraper.py without testing** - ~2360 lines, complex flow
 
 ---
 
@@ -129,4 +135,5 @@ playwright install chromium
 - First run requires manual login to Pinterest
 - Profile persistence via `--chrome-profile` flag
 - Tray app is Windows-only (pystray + Windows paths)
-- Large files: scraper.py (1200 lines) - test carefully
+- Large files: scraper.py (~2360 lines) - test carefully
+- See `SCALING_GUIDE.md` for extending to multiple websites

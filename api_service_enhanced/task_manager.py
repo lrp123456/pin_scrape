@@ -45,6 +45,7 @@ class TaskManager:
         self.progress_tracker = progress_tracker
         self.current_task: Optional[subprocess.Popen] = None
         self.lock = threading.Lock()
+        self._current_output_dir: str = ""  # 当前任务的输出目录
 
     def run_scrape(self, params: Dict) -> Dict:
         """执行爬虫任务
@@ -54,7 +55,7 @@ class TaskManager:
                 - query: 搜索关键词
                 - max_pins: 最大数量
                 - min_saves: 最小保存数
-                - min_likes: 最小点赞数
+                - min_comments: 最小评论数
                 - min_comments: 最小评论数
                 - output_dir: 输出目录
                 - chrome_port: Chrome端口
@@ -70,14 +71,26 @@ class TaskManager:
                 return {"success": False, "error": "Another task is already running"}
 
         # 启动Chrome（如果未启动）
+        # 多 Worker 模式下，根据 worker_id 计算端口号（worker-0→9222, worker-1→9223, ...）
+        chrome_port = params.get("chrome_port", 9222)
+        worker_id = params.get("worker_id", "")
+        if worker_id and not params.get("chrome_port"):
+            # 从 worker_id 提取序号，如 "worker-2" → 9224
+            try:
+                w_idx = int(worker_id.rsplit("-", 1)[-1])
+                chrome_port = 9222 + w_idx
+            except (ValueError, IndexError):
+                pass  # 无法解析则用默认 9222
+
         endpoint = self.chrome_manager.get_endpoint()
         if not endpoint:
             try:
                 print("[TaskManager] Chrome未启动，正在启动...")
                 endpoint = self.chrome_manager.start_chrome(
-                    port=params.get("chrome_port", 9222),
+                    port=chrome_port,
                     profile=params.get("chrome_profile", ""),
                     headless=params.get("chrome_headless", False),
+                    proxy_server=params.get("proxy_server"),
                 )
                 print(f"[TaskManager] Chrome已启动: {endpoint}")
             except Exception as e:
@@ -85,9 +98,28 @@ class TaskManager:
                 print(f"[TaskManager] {error_msg}")
                 return {"success": False, "error": error_msg}
 
-        # 更新进度
-        self.progress_tracker.start_task(params["query"], params.get("max_pins", 100))
-        print(f"[TaskManager] 开始任务: {params['query']}")
+        # 生成带时间戳的子目录
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_query = "".join(
+            c for c in params["query"] if c.isalnum() or c in (" ", "_", "-")
+        ).strip()
+        safe_query = safe_query.replace(" ", "_")
+        task_subdir = f"{safe_query}_{timestamp}"
+        base_output = params.get("output_dir", "./output")
+        full_output_dir = str(Path(base_output) / task_subdir)
+
+        # 保存到实例变量，供 _build_command 使用
+        self._current_output_dir = full_output_dir
+
+        # 更新进度（包含 output_dir）
+        self.progress_tracker.start_task(
+            params["query"], params.get("max_pins", 100), full_output_dir
+        )
+        print(
+            f"[TaskManager] 开始任务: {params['query']}, output_dir: {full_output_dir}"
+        )
 
         # 创建进度文件路径（与ProgressTracker使用相同路径）
         progress_file = Path(os.getenv("TEMP", ".")) / "pinterest_scraper_progress.json"
@@ -133,7 +165,10 @@ class TaskManager:
                 downloaded_count = 0
                 if params.get("download_images", True):
                     try:
-                        output_dir = Path(params.get("output_dir", "./output"))
+                        output_dir = Path(
+                            self._current_output_dir
+                            or params.get("output_dir", "./output")
+                        )
                         # 优先使用达标数据文件
                         qualified_file = output_dir / "qualified_pins.json"
                         data_file = output_dir / "data.json"
@@ -147,6 +182,8 @@ class TaskManager:
 
                         if pins:
                             print(f"[TaskManager] 开始下载 {len(pins)} 张图片...")
+                            # 更新已收集数量
+                            self.progress_tracker.update_collected(len(pins))
                             # 动态导入 downloader 避免循环依赖
                             sys.path.insert(0, str(get_base_path()))
                             from downloader import ImageDownloader
@@ -168,14 +205,12 @@ class TaskManager:
                                 downloaded = downloader.filter_and_download(
                                     pin_objects,
                                     min_saves=0,
-                                    min_likes=0,
                                     min_comments=0,
                                 )
                             else:
                                 downloaded = downloader.filter_and_download(
                                     pin_objects,
                                     min_saves=params.get("min_saves", 0),
-                                    min_likes=params.get("min_likes", 0),
                                     min_comments=params.get("min_comments", 0),
                                 )
                             downloaded_count = len(downloaded)
@@ -187,14 +222,17 @@ class TaskManager:
 
                 self.progress_tracker.complete()
                 print("[TaskManager] ✓ 任务成功完成")
+                total_pins = len(pins) if pins else 0
                 return {
                     "success": True,
                     "output": stdout,
                     "message": "任务完成",
                     "downloaded_images": downloaded_count,
+                    "collected_count": total_pins,
+                    "filtered_count": len(downloaded) if downloaded else 0,
                 }
             else:
-                error_msg = stderr[:500] if stderr else "未知错误"
+                error_msg = stderr[:2000] if stderr else "未知错误"
                 print(f"[TaskManager] ✗ 任务失败: {error_msg}")
                 self.progress_tracker.error(error_msg)
                 return {
@@ -219,6 +257,7 @@ class TaskManager:
         finally:
             with self.lock:
                 self.current_task = None
+                self._current_output_dir = ""  # 清理输出目录
             print("[TaskManager] 任务清理完成")
 
     def cancel_current(self):
@@ -303,61 +342,80 @@ class TaskManager:
 
             cmd = [
                 str(worker_exe),
-                "--query",
-                params["query"],
-                "--max-pins",
-                str(params.get("max_pins", 100)),
-                "--min-saves",
-                str(params.get("min_saves", 0)),
-                "--min-likes",
-                str(params.get("min_likes", 0)),
-                "--min-comments",
-                str(params.get("min_comments", 0)),
+                "--site", params.get("site", "pinterest"),
+                "--query", params["query"],
+                "--max-pins", str(params.get("max_pins", 100)),
+                "--min-saves", str(params.get("min_saves", 0)),
+                "--min-comments", str(params.get("min_comments", 0)),
                 "--output",
-                params.get("output_dir", "./output"),
+                self._current_output_dir or params.get("output_dir", "./output"),
                 "--connect",
-                "--cdp-endpoint",
-                endpoint,
+                "--cdp-endpoint", endpoint,
             ]
 
-            # 添加爬坡模式参数
             if params.get("climb_mode"):
                 cmd.append("--climb-mode")
 
-            # 添加媒体类型参数
             cmd.append("--media-type")
             cmd.append(params.get("media_type", "all"))
+
+            # AI 筛选默认启用，仅在显式禁用时传递 --no-ai-filter
+            if not params.get("enable_ai_filter", True):
+                cmd.append("--no-ai-filter")
+            cmd.append("--ai-filter-timeout")
+            cmd.append(str(params.get("ai_filter_timeout", 180)))
+
+            if params.get("site") == "tianjin":
+                cmd.append("--max-gov-pages")
+                cmd.append(str(params.get("max_gov_pages", 100)))
+
+            # 多 Worker 标识
+            if params.get("worker_id"):
+                cmd.append("--worker-id")
+                cmd.append(params["worker_id"])
+            # 代理服务器
+            if params.get("proxy_server"):
+                cmd.append("--proxy-server")
+                cmd.append(params["proxy_server"])
 
         else:
-            # 开发环境：使用Python执行main.py
             main_py = base_path / "main.py"
             cmd = [
-                sys.executable,
-                str(main_py),
-                "--query",
-                params["query"],
-                "--max-pins",
-                str(params.get("max_pins", 100)),
-                "--min-saves",
-                str(params.get("min_saves", 0)),
-                "--min-likes",
-                str(params.get("min_likes", 0)),
-                "--min-comments",
-                str(params.get("min_comments", 0)),
+                sys.executable, str(main_py),
+                "--site", params.get("site", "pinterest"),
+                "--query", params["query"],
+                "--max-pins", str(params.get("max_pins", 100)),
+                "--min-saves", str(params.get("min_saves", 0)),
+                "--min-comments", str(params.get("min_comments", 0)),
                 "--output",
-                params.get("output_dir", "./output"),
-                "--connect",
-                "--cdp-endpoint",
-                endpoint,
+                self._current_output_dir or params.get("output_dir", "./output"),
+                "--connect", "--cdp-endpoint", endpoint,
             ]
 
-            # 添加爬坡模式参数
             if params.get("climb_mode"):
                 cmd.append("--climb-mode")
 
-            # 添加媒体类型参数
             cmd.append("--media-type")
             cmd.append(params.get("media_type", "all"))
+
+            # AI 筛选默认启用，仅在显式禁用时传递 --no-ai-filter
+            if not params.get("enable_ai_filter", True):
+                cmd.append("--no-ai-filter")
+            cmd.append("--ai-filter-timeout")
+            cmd.append(str(params.get("ai_filter_timeout", 180)))
+
+            if params.get("site") == "tianjin":
+                cmd.append("--max-gov-pages")
+                cmd.append(str(params.get("max_gov_pages", 100)))
+
+            # 多 Worker 标识
+            if params.get("worker_id"):
+                cmd.append("--worker-id")
+                cmd.append(params["worker_id"])
+            # 代理服务器
+            if params.get("proxy_server"):
+                cmd.append("--proxy-server")
+                cmd.append(params["proxy_server"])
 
         if params.get("debug"):
             cmd.append("--debug")
