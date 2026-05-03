@@ -1,4 +1,3 @@
-```
 # Python
 __pycache__/
 *.pyc
@@ -12,8 +11,9 @@ venv/
 .env.local
 *.env.*
 
-# Logs
+# Logs & Debug
 *.log
+logs/
 
 # Temporary files
 *.tmp
@@ -22,12 +22,21 @@ venv/
 # Editors
 .vscode/
 .idea/
+.claude/
+
+# Runtime data
 redis_config.json
 ollama_config.json
+cookiesFile/
+db/
+output/
 
 # Build artifacts
 dist/
+build/build/
 build/dist/
 target/
-output/
-```
+
+# Debug artifacts (generated at runtime)
+debug_*/
+test_output/

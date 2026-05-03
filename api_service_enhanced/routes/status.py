@@ -1,16 +1,21 @@
 """状态查询路由"""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from typing import Optional
 
 router = APIRouter()
 
-# 全局实例（由service_main.py设置）
 progress_tracker = None
 
 
 @router.get("/progress")
-async def get_progress():
+async def get_progress(
+    worker_id: Optional[str] = Query(None, description="Worker ID，如 worker-0。不传则返回所有Worker进度")
+):
     """获取当前任务进度
+
+    Args:
+        worker_id: 可选，指定Worker ID查询特定进度
 
     Returns:
         进度信息
@@ -23,7 +28,7 @@ async def get_progress():
             "message": "服务未初始化",
         }
 
-    return progress_tracker.get_progress()
+    return progress_tracker.get_progress(worker_id=worker_id)
 
 
 @router.get("/status")

@@ -9,7 +9,6 @@ from functools import partial
 
 router = APIRouter()
 
-# 全局实例（由service_main.py设置）
 task_manager = None
 
 
@@ -25,44 +24,36 @@ class ScrapeRequest(BaseModel):
     chrome_profile: str = ""
     chrome_headless: bool = False
     debug: bool = False
-    media_type: str = "all"  # all, images, videos
+    media_type: str = "all"
     download_images: bool = True
     climb_mode: bool = False
     use_folder_structure: bool = False
-    enable_ai_filter: bool = True  # AI 筛选开关，默认开启
-    ai_filter_timeout: int = 180  # AI 筛选超时时间（秒）
-    site: str = "pinterest"  # pinterest, tianjin
-    max_gov_pages: int = 100  # 住建委最大翻页数（仅tianjin）
-    worker_id: Optional[str] = None  # 多 Worker 标识，如 "worker-1"
-    proxy_server: Optional[str] = None  # Chrome 代理，如 "socks5://proxy.example.com:1080"
+    enable_ai_filter: bool = True
+    ai_filter_timeout: int = 180
+    site: str = "pinterest"
+    max_gov_pages: int = 100
+    worker_id: Optional[str] = None
+    proxy_server: Optional[str] = None
 
 
 @router.post("/scrape")
 async def scrape(req: ScrapeRequest):
-    """同步爬取（阻塞，但不阻塞事件循环）
-
-    Args:
-        req: 爬虫请求参数
-
-    Returns:
-        爬取结果
-    """
+    """同步爬取（阻塞，但不阻塞事件循环）"""
     if not task_manager:
         raise HTTPException(status_code=500, detail="Task manager not initialized")
 
     params = req.model_dump()
 
-    # 设置默认输出目录
     if not params["output_dir"]:
         params["output_dir"] = "./output"
 
-    print(f"[API] 开始同步爬取: {params['query']}, max_pins={params['max_pins']}")
+    worker_id = params.get("worker_id", "worker-0")
+    print(f"[API] 开始同步爬取: {params['query']}, worker={worker_id}")
 
-    # 用线程池执行同步阻塞任务，避免阻塞 asyncio 事件循环
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, partial(task_manager.run_scrape, params))
 
-    print(f"[API] 爬取完成: {result.get('success', False)}")
+    print(f"[API] 爬取完成: {result.get('success', False)}, worker={worker_id}")
 
     if not result["success"]:
         raise HTTPException(
@@ -74,26 +65,18 @@ async def scrape(req: ScrapeRequest):
 
 @router.post("/scrape/async")
 async def scrape_async(req: ScrapeRequest):
-    """异步爬取（后台线程）
-
-    Args:
-        req: 爬虫请求参数
-
-    Returns:
-        任务启动确认
-    """
+    """异步爬取（后台线程）"""
     if not task_manager:
         raise HTTPException(status_code=500, detail="Task manager not initialized")
 
     params = req.model_dump()
 
-    # 设置默认输出目录
     if not params["output_dir"]:
         params["output_dir"] = "./output"
 
-    # 启动后台线程
-    print(f"[API] 开始异步爬取: {params['query']}, AI筛选={params.get('enable_ai_filter', True)}")
-    
+    worker_id = params.get("worker_id", "worker-0")
+    print(f"[API] 开始异步爬取: {params['query']}, worker={worker_id}, AI筛选={params.get('enable_ai_filter', True)}")
+
     def _run_in_background():
         task_manager.run_scrape(params)
 
@@ -104,5 +87,6 @@ async def scrape_async(req: ScrapeRequest):
         "status": "started",
         "message": "Scrape task started in background",
         "query": params["query"],
+        "worker_id": worker_id,
         "ai_filter_enabled": params.get("enable_ai_filter", True),
     }

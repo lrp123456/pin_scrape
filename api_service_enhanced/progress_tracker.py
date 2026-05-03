@@ -11,48 +11,52 @@ from shared.progress_state import ProgressState
 
 
 class ProgressTracker:
-    """进度追踪器"""
+    """进度追踪器（支持多Worker）"""
 
-    PROGRESS_FILE = Path(os.getenv("TEMP", ".")) / "pinterest_scraper_progress.json"
+    PROGRESS_DIR = Path(os.getenv("TEMP", ".")) / "pinterest_scraper_progress"
 
     def __init__(self):
         self.lock = threading.Lock()
-        self.progress = ProgressState()
-        self._load_progress(reset_running=True)
+        self._workers: Dict[str, ProgressState] = {}
+        self.PROGRESS_DIR.mkdir(parents=True, exist_ok=True)
+        self._load_all_progress(reset_running=True)
 
-    def _load_progress(self, reset_running=False):
-        """从文件加载进度
+    def _get_progress_file(self, worker_id: str) -> Path:
+        return self.PROGRESS_DIR / f"progress_{worker_id}.json"
 
-        Args:
-            reset_running: 仅在初始化时为True，清除上次中断的残留状态
-        """
-        try:
-            if self.PROGRESS_FILE.exists():
-                with open(self.PROGRESS_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    # 确保 output_dir 被正确加载（旧文件可能没有这个字段）
+    def _load_all_progress(self, reset_running=False):
+        for f in self.PROGRESS_DIR.glob("progress_worker-*.json"):
+            worker_id = f.stem.replace("progress_", "")
+            try:
+                with open(f, "r", encoding="utf-8") as fp:
+                    data = json.load(fp)
                     if "output_dir" not in data:
                         data["output_dir"] = ""
-                    self.progress = ProgressState.from_dict(data)
+                    state = ProgressState.from_dict(data)
                     if reset_running:
-                        self.progress.running = False
-                        self.progress.stage = "idle"
-        except Exception:
-            pass
+                        state.running = False
+                        state.stage = "idle"
+                    self._workers[worker_id] = state
+            except Exception:
+                pass
 
-    def _save_progress(self):
-        """保存进度到文件"""
+    def _load_progress(self, reset_running=False):
+        self._load_all_progress(reset_running)
+
+    def _save_progress(self, worker_id: str = "worker-0"):
         with self.lock:
+            state = self._workers.get(worker_id)
+            if not state:
+                return
             try:
-                with open(self.PROGRESS_FILE, "w", encoding="utf-8") as f:
-                    json.dump(self.progress.to_dict(), f, indent=2, ensure_ascii=False)
+                with open(self._get_progress_file(worker_id), "w", encoding="utf-8") as f:
+                    json.dump(state.to_dict(), f, indent=2, ensure_ascii=False)
             except Exception as e:
                 print(f"保存进度文件失败: {e}")
 
-    def start_task(self, query: str, total: int, output_dir: str = ""):
-        """开始任务"""
+    def start_task(self, query: str, total: int, output_dir: str = "", worker_id: str = "worker-0"):
         with self.lock:
-            self.progress = ProgressState(
+            self._workers[worker_id] = ProgressState(
                 running=True,
                 stage="initializing",
                 percentage=0,
@@ -65,53 +69,74 @@ class ProgressTracker:
                 output_dir=output_dir,
                 collected_count=0,
             )
-        self._save_progress()
+        self._save_progress(worker_id)
 
-    def update(self, stage: str, current: int, total: int, message: str = ""):
-        """更新进度"""
+    def update(self, stage: str, current: int, total: int, message: str = "", worker_id: str = "worker-0"):
         with self.lock:
-            self.progress.stage = stage
-            self.progress.current = current
-            self.progress.total = total
-            self.progress.percentage = int((current / total * 100) if total > 0 else 0)
-            self.progress.message = message
-        self._save_progress()
+            state = self._workers.get(worker_id)
+            if not state:
+                state = ProgressState()
+                self._workers[worker_id] = state
+            state.stage = stage
+            state.current = current
+            state.total = total
+            state.percentage = int((current / total * 100) if total > 0 else 0)
+            state.message = message
+        self._save_progress(worker_id)
 
-    def update_collected(self, count: int):
-        """更新已收集数量"""
+    def update_collected(self, count: int, worker_id: str = "worker-0"):
         with self.lock:
-            self.progress.collected_count = count
-        self._save_progress()
+            state = self._workers.get(worker_id)
+            if state:
+                state.collected_count = count
+        self._save_progress(worker_id)
 
-    def complete(self):
-        """完成任务"""
+    def complete(self, worker_id: str = "worker-0"):
         with self.lock:
-            self.progress.running = False
-            self.progress.stage = "completed"
-            self.progress.percentage = 100
-            self.progress.message = "任务完成"
-        self._save_progress()
+            state = self._workers.get(worker_id)
+            if state:
+                state.running = False
+                state.stage = "completed"
+                state.percentage = 100
+                state.message = "任务完成"
+        self._save_progress(worker_id)
 
-    def error(self, error_msg: str):
-        """记录错误"""
+    def error(self, error_msg: str, worker_id: str = "worker-0"):
         with self.lock:
-            self.progress.running = False
-            self.progress.stage = "error"
-            self.progress.error = error_msg
-            self.progress.message = f"错误: {error_msg}"
-        self._save_progress()
+            state = self._workers.get(worker_id)
+            if state:
+                state.running = False
+                state.stage = "error"
+                state.error = error_msg
+                state.message = f"错误: {error_msg}"
+        self._save_progress(worker_id)
 
-    def cancel(self):
-        """取消任务"""
+    def cancel(self, worker_id: str = None):
         with self.lock:
-            self.progress.running = False
-            self.progress.stage = "cancelled"
-            self.progress.message = "任务已取消"
-            self.progress.error = None
-        self._save_progress()
+            if worker_id:
+                state = self._workers.get(worker_id)
+                if state:
+                    state.running = False
+                    state.stage = "cancelled"
+                    state.message = "任务已取消"
+                    state.error = None
+                self._save_progress(worker_id)
+            else:
+                for wid, state in self._workers.items():
+                    state.running = False
+                    state.stage = "cancelled"
+                    state.message = "任务已取消"
+                    state.error = None
+                    self._save_progress(wid)
 
-    def get_progress(self) -> Dict[str, Any]:
-        """获取当前进度"""
+    def get_progress(self, worker_id: str = None) -> Dict[str, Any]:
         with self.lock:
-            self._load_progress()
-            return self.progress.to_dict()
+            if worker_id:
+                state = self._workers.get(worker_id)
+                if state:
+                    return state.to_dict()
+                return ProgressState().to_dict()
+            all_progress = {}
+            for wid, state in self._workers.items():
+                all_progress[wid] = state.to_dict()
+            return all_progress

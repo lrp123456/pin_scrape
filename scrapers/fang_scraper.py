@@ -136,29 +136,55 @@ class FangScraper:
         return results
 
     def _search_and_extract(self, record_name: str) -> Optional[NameMapping]:
-        encoded = self._url_encode(record_name)
+        # 先用原始名称搜索
+        mapping = self._do_search(record_name)
+        if mapping:
+            return mapping
+
+        # 原始名称搜索失败，尝试简化名称
+        simplified = self._simplify_name(record_name)
+        if simplified and simplified != record_name:
+            print(f"  → 尝试简化名称: '{record_name}' → '{simplified}'")
+            mapping = self._do_search(simplified)
+            if mapping:
+                mapping.record_name = record_name
+                return mapping
+
+        # 简化名称也失败，尝试去掉常见后缀
+        core = self._extract_core_name(record_name)
+        if core and core != record_name and core != simplified:
+            print(f"  → 尝试核心名称: '{record_name}' → '{core}'")
+            mapping = self._do_search(core)
+            if mapping:
+                mapping.record_name = record_name
+                return mapping
+
+        print(f"  [DEBUG] 未找到匹配的楼盘")
+        return None
+
+    def _do_search(self, search_name: str, max_attempts: int = 3) -> Optional[NameMapping]:
+        """执行单次搜索并提取结果"""
+        encoded = self._url_encode(search_name)
         search_url = f"{self.SEARCH_BASE}{encoded}/?xf_source={encoded}"
         print(f"  [DEBUG] 搜索URL: {search_url}")
 
-        for attempt in range(3):
+        for attempt in range(max_attempts):
             if attempt > 0:
                 print(f"  [DEBUG] 第 {attempt + 1} 次重试...")
                 time.sleep(random.uniform(3, 5))
 
             try:
                 self._page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
-                # 等待搜索结果列表容器出现
                 self._page.wait_for_selector("#newhouse_loupan_list", timeout=10000)
             except Exception as e:
                 print(f"  [DEBUG] 页面加载失败: {e}")
                 if self.debug:
-                    self._save_debug_screenshot(record_name, attempt)
+                    self._save_debug_screenshot(search_name, attempt)
                 continue
 
             if self.debug:
-                self._save_debug_html(record_name, attempt)
+                self._save_debug_html(search_name, attempt)
 
-            # 在浏览器中执行 JS 提取候选楼盘
             candidates = self._page.evaluate("""() => {
                 const container = document.getElementById('newhouse_loupan_list');
                 if (!container) return [];
@@ -176,12 +202,11 @@ class FangScraper:
                 promo_name = best["text"]
                 link = best.get("href", "")
 
-                confidence = self._calc_confidence(record_name, promo_name)
-                # 只要是搜索结果命中，保底置信度 0.8
+                confidence = self._calc_confidence(search_name, promo_name)
                 confidence = max(confidence, 0.8)
-                print(f"  [DEBUG] 匹配成功: {record_name} -> {promo_name} (置信度: {confidence:.0%})")
+                print(f"  [DEBUG] 匹配成功: {search_name} -> {promo_name} (置信度: {confidence:.0%})")
                 return NameMapping(
-                    record_name=record_name,
+                    record_name=search_name,
                     promo_name=promo_name,
                     fang_url=link,
                     confidence=confidence,
@@ -194,8 +219,70 @@ class FangScraper:
                 time.sleep(random.uniform(5, 10))
                 continue
 
-        print(f"  [DEBUG] 未找到匹配的楼盘")
+            # 没有候选且无验证码，说明确实搜不到，直接跳出
+            break
+
         return None
+
+    def _simplify_name(self, name: str) -> str:
+        """简化备案名，去除配建、楼号等后缀
+
+        例如：
+        - "潼锦苑1、2及配建一、3及配建二、4及配建三" → "潼锦苑"
+        - "映荷苑1号楼" → "映荷苑"
+        - "春风雅筑3号楼、4号楼" → "春风雅筑"
+        """
+        if not name:
+            return name
+
+        cleaned = name
+
+        # 删除"X及配建X"模式
+        cleaned = re.sub(r'[\d、]*\d+及配建[一二三四五六七八九十]+', '', cleaned).strip()
+
+        # 删除"号楼"及其前面的数字和分隔符
+        if '号楼' in cleaned:
+            prefix = cleaned.split('号楼')[0]
+            cleaned = re.sub(r'[\d、,，\-]+$', '', prefix).strip()
+
+        # 删除尾部纯数字
+        cleaned = re.sub(r'\d+$', '', cleaned).strip()
+
+        # 删除末尾标点
+        cleaned = re.sub(r'[、,，\s]+$', '', cleaned).strip()
+
+        return cleaned if cleaned else name
+
+    def _extract_core_name(self, name: str) -> str:
+        """提取核心名称，去掉常见后缀
+
+        例如：
+        - "嘉丰花苑" → "嘉丰"
+        - "格调林泉西苑" → "格调林泉"
+        - "枫丹上苑" → "枫丹"
+        """
+        if not name:
+            return name
+
+        core = name
+
+        # 去掉常见后缀（从长到短匹配）
+        suffixes = [
+            '花苑', '家园', '名邸', '雅居', '华庭', '上苑', '嘉园',
+            '星苑', '云园', '锦园', '兰苑', '竹苑', '梅苑', '菊苑',
+            '新苑', '西苑', '东苑', '南苑', '北苑',
+            '花园', '公寓', '公馆', '府邸', '华府', '学府',
+            '小镇', '新城', '壹号', '壹品',
+            '苑', '园', '庭', '邸', '府', '城', '居', '筑', '院',
+            '里', '坊', '湾', '台', '阁', '轩', '庐', '庄',
+        ]
+
+        for suffix in suffixes:
+            if core.endswith(suffix) and len(core) > len(suffix) + 1:
+                core = core[:-len(suffix)]
+                break
+
+        return core if core else name
 
     def _calc_confidence(self, record_name: str, promo_name: str) -> float:
         if not record_name or not promo_name:
@@ -213,13 +300,15 @@ class FangScraper:
 
     def _url_encode(self, text: str) -> str:
         try:
-            return urllib.parse.quote(text.encode("gbk"))
+            return urllib.parse.quote(text.encode("utf-8"))
         except Exception:
             return urllib.parse.quote(text)
 
     def _save_debug_html(self, record_name: str, attempt: int):
+        if not self.debug:
+            return
         safe_name = re.sub(r"[\\/:*?\"<>|]", "_", record_name)[:30]
-        debug_dir = Path("debug_fang") / safe_name
+        debug_dir = Path("logs/debug/fang") / safe_name
         debug_dir.mkdir(parents=True, exist_ok=True)
         try:
             html = self._page.content()
@@ -230,8 +319,10 @@ class FangScraper:
             pass
 
     def _save_debug_screenshot(self, record_name: str, attempt: int):
+        if not self.debug:
+            return
         safe_name = re.sub(r"[\\/:*?\"<>|]", "_", record_name)[:30]
-        debug_dir = Path("debug_fang") / safe_name
+        debug_dir = Path("logs/debug/fang") / safe_name
         debug_dir.mkdir(parents=True, exist_ok=True)
         try:
             self._page.screenshot(path=str(debug_dir / f"screenshot_{attempt}.png"))

@@ -1,0 +1,684 @@
+{
+  "name": "子处理（pin）",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "={{ $json.command }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        4528
+      ],
+      "id": "a836c89e-9b83-417d-8606-21deda5b3aed",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 获取当前循环的图片和提示词 (使用 .item 精准获取当前循环项)\nconst base64String = $('Extract from File1').item.json.data;\nconst promptText = $('Edit Fields1').item.json.promt;\n\nif (!base64String) {\n    throw new Error(\"兜底分支获取图片失败\");\n}\n\n// 2. 清理 Base64 前缀 (Ollama 要求纯 base64)\nconst cleanBase64 = base64String.replace(/^data:image\\/\\w+;base64,/, '');\n\n// 3. 构建 Ollama 请求Payload\nconst ollamaPayload = {\n    // ⚠️ 记得换成你本地跑的视觉模型，比如 llava, bakllava, minicpm-v\n    model: \"gemma4:e4b\", \n    messages: [\n        {\n            role: \"system\",\n            content: promptText\n        },\n        {\n            role: \"user\",\n            content: \"请严格根据系统设定的标准对这张图片进行评分，只输出合法的 JSON 格式数据。\",\n            images: [cleanBase64]\n        }\n    ],\n    stream: false,\n    format: \"json\" // 强制要求 Ollama 输出 JSON\n};\n\nreturn { json: { requestBody: ollamaPayload, source: \"Ollama_Fallback\" } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        4464
+      ],
+      "id": "948519b0-3b32-4dfd-ac12-0e20e8cff855",
+      "name": "Code in JavaScript10"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/chat",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.requestBody.toJsonString() }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2368,
+        4464
+      ],
+      "id": "50707909-ae92-43c9-b67d-89896a55dd4e",
+      "name": "Ollama兜底-调用API"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5afea627-edb4-48e2-a00c-a78d0b7a2921",
+              "name": "promt",
+              "value": "# Role\n你是一个资深的室内空间美学评估专家及影像质量筛选引擎。你的任务是严格根据给定的维度，对输入的家居空间或建筑内景图片进行深度解析和量化评分。\n\n# Task\n请观察输入的图片，围绕以下5个核心维度进行评估。每个维度满分10分，总分50分。\n评估标准以“专业室内设计审美”为基准，注重高级感与空间情绪，不盲目追求猎奇或极端设计。\n\n# Evaluation Criteria\n1. 采光与光影 (Lighting) [0-10分]\n   - 关注自然光引入、光线层次、光影美感。\n   - 8-10分：采光极佳，光影有明显的艺术设计感与层次。\n   - 6-7分：采光良好，明亮通透，无明显曝光问题。\n   - 4-5分：采光一般，略显平庸或局部过暗/过曝。\n   - 0-3分：采光差，画面死黑、压抑或严重过曝。\n\n2. 设计突破感与辨识度 (Breakthrough Features) [0-10分]\n   - 关注是否有明确的风格特征、创新的细节、考究的材质拼接或抢眼的单品。\n   - 8-10分：风格极具辨识度，细节精致，有打破常规的“突破感”（如：极具品味的艺术摆件、独特的材质碰撞）。\n   - 6-7分：有清晰的风格倾向和一定的设计元素。\n   - 4-5分：普通基础装修，缺乏记忆点。\n   - 0-3分：拼凑感强，风格混乱，甚至有廉价感。\n\n3. 空间景深与构图 (Depth of Field) [0-10分]\n   - 关注空间纵深感的营造、视角选择、布局合理性及画面构图比例。\n   - 8-10分：构图极具张力，景深控制完美，能展现空间的多层次与立体感。\n   - 6-7分：构图平稳合理，有一定的空间延展性。\n   - 4-5分：视角单一，略显扁平。\n   - 0-3分：完全扁平的“一张沙发+一面墙”式呆板构图，或画面严重畸变。\n\n4. 治愈感与舒适度 (Healing Vibe) [0-10分]\n   - 关注色彩搭配是否和谐、材质是否具有亲和力、整体是否传达出放松与宜居感。\n   - 8-10分：色彩与材质搭配极度舒适，能给观看者带来强烈的“治愈感”与居住渴望。\n   - 6-7分：视觉舒适，符合大众审美的宜居标准。\n   - 4-5分：色彩或材质略显生硬，缺乏生活气息。\n   - 0-3分：配色刺眼、杂乱，或给人强烈的冰冷、不适感。\n\n5. 氛围与质感 (Atmosphere) [0-10分]\n   - 关注画面的整体情绪感染力、材质的高级感呈现及色彩滤镜的克制感。\n   - 8-10分：情绪表达精准，质感极其细腻，呈现出强烈的杂志级“高级感”与氛围。\n   - 6-7分：有不错的氛围烘托，质感在线。\n   - 4-5分：氛围平淡，质感呈现一般。\n   - 0-3分：画质粗糙，滤镜感过重或完全缺乏氛围营造。\n\n# Output Format\n【警告】为了确保程序能够直接反序列化，请务必且只能输出合法的 JSON 格式数据。绝对不要输出任何 markdown 代码块标记（如 ```json ）或任何解释性文字。必须严格按照以下结构输出：\n\n{\n  \"scores\": {\n    \"lighting\": <采光得分, Integer 0-10>,\n    \"breakthrough_features\": <突破感得分, Integer 0-10>,\n    \"depth_of_field\": <景深得分, Integer 0-10>,\n    \"healing_vibe\": <治愈感得分, Integer 0-10>,\n    \"atmosphere\": <氛围感得分, Integer 0-10>\n  },\n  \"total_score\": <总分, Integer 0-50>,\n  \"is_approved\": <Boolean值, 如果总分>=42且\"breakthrough_features\"及\"atmosphere\"均不低于8分则为true，否则为false>,\n  \"reasoning\": \"<用一到两句话简述评分的核心理由，必须具体指出画面中体现'突破感'和'治愈感'的元素>\"\n}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1168,
+        4336
+      ],
+      "id": "c6b0e01e-d81e-4909-a215-1d414e7621ce",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 获取提示词\nconst promptText = $(\"Edit Fields1\").first().json.promt;\n\n// 2. 获取已经由上一个节点提取到 JSON 中的 Base64 字符串\nconst base64String = $input.item.json.data;\n\nif (!base64String) {\n    throw new Error(\"❌ 在 JSON 中找不到提取好的图片数据！请检查 Extract from File 节点是否成功执行。\");\n}\n\n// 3. 提取 MIME 类型（尝试从残留的 binary 对象中取，取不到就默认 jpeg）\nlet mimeType = \"image/jpeg\";\nif ($input.item.binary && $input.item.binary.data && $input.item.binary.data.mimeType) {\n    mimeType = $input.item.binary.data.mimeType;\n}\n\n// 4. 智能组装图片 URL\n// 因为不同版本的 n8n 提取结果不同，有的是纯 base64，有的自带 \"data:image/jpeg;base64,\" 前缀。这里做一个智能判断。\nconst finalImageUrl = base64String.startsWith('data:') \n    ? base64String \n    : `data:${mimeType};base64,${base64String}`;\n\n// 5. 组装大模型请求 Payload\nconst doubaoPayload = {\n    model: \"doubao-seed-2-0-lite-260215\",\n    messages: [\n        {\n            role: \"system\",\n            content: promptText\n        },\n        {\n            role: \"user\",\n            content: [\n                {\n                    type: \"text\",\n                    text: \"请根据系统设定的标准对这张图片进行评分，只输出合法的 JSON。\"\n                },\n                {\n                    type: \"image_url\",\n                    image_url: {\n                        url: finalImageUrl\n                    }\n                }\n            ]\n        }\n    ],\n    // 如果后续 HTTP 请求报错说 payload 太大，可以尝试把 max_tokens 加回来\n};\n\n// 输出最终的请求体，准备传给 HTTP Request 节点\nreturn { json: { requestBody: doubaoPayload } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        4336
+      ],
+      "id": "64357221-c3e5-4990-89e0-9ac937af981b",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        4336
+      ],
+      "id": "d4bc13d5-4e76-491a-be7c-f278207414e1",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 获取当前流经的数据，并自动剥离外层可能存在的数组外壳\nlet inputData = $input.item.json;\nif (Array.isArray(inputData)) {\n    inputData = inputData[0];\n}\n\nlet aiContent = \"\";\nlet engineName = \"Unknown\";\n\n// 2. 智能探针：根据特征字段自动匹配解析路径\nif (inputData.choices && inputData.choices.length > 0 && inputData.choices[0].message) {\n    aiContent = inputData.choices[0].message.content;\n    engineName = inputData.model || \"Doubao_API\";\n} else if (inputData.message && inputData.message.content) {\n    aiContent = inputData.message.content;\n    engineName = inputData.model || \"Ollama_Fallback\";\n} else {\n    throw new Error(\"❌ 未知的 API 响应结构，提取失败: \" + JSON.stringify(inputData).substring(0, 200));\n}\n\n// 3. 清洗大模型输出的 Markdown 标记并解析 JSON\nlet cleanJsonStr = aiContent.replace(/```json/gi, '').replace(/```/g, '').trim();\nlet resultData = {};\n\ntry {\n    resultData = JSON.parse(cleanJsonStr);\n} catch (e) {\n    throw new Error(`❌ JSON 解析失败! 引擎[${engineName}] 返回了不规范的内容: ` + aiContent);\n}\n\n// 4. 定级核心逻辑\nlet level = \"D_淘汰\";\nconst score = resultData.total_score || 0;\n\nif (resultData.is_approved) {\n    level = score >= 45 ? \"S_极品\" : \"A_优秀\";\n} else if (score >= 35) {\n    level = \"B_备选\";\n} else if (score >= 25) {\n    level = \"C_一般\";\n}\n\n// 5. 获取原始文件信息\nconst currentLoopItem = $('Loop Over Items4').item;\nconst fileName = currentLoopItem.binary.data.fileName;\n\n// 跨节点溯源：从「收集Worker目录」节点获取当前图片所属的文件夹名\nlet rawDataDir = \"\";\ntry {\n    rawDataDir = $('收集Worker目录').item.json.dir_part;\n} catch(e) {\n    try {\n        rawDataDir = $('收集Worker目录').first().json.dir_part;\n    } catch(e2) {\n        // 兼容旧版：回退到格式化结果1\n        try {\n            const rawObj = $('格式化结果1').item.json.raw;\n            const firstKey = Object.keys(rawObj)[0];\n            rawDataDir = rawObj[firstKey].output_dir.split(\"\\\\\")[1];\n        } catch(e3) {\n            rawDataDir = '';\n        }\n    }\n}\n\n// 6. 生成操作命令\nconst sourceFilePath = `/tmp/pin_images/${rawDataDir}/images/${fileName}`;\nconst targetDirPath = `/tmp/pin_images/${rawDataDir}/classified/${level}`;\n\nconst shellCmd = `export LANG=C.UTF-8 && mkdir -p \"${targetDirPath}\" && cp \"${sourceFilePath}\" \"${targetDirPath}/\"`;\n\n// 7. 输出统一标准的 JSON\nreturn {\n    json: {\n        engine: engineName,\n        fileName: fileName,\n        folderName: rawDataDir,\n        level: level,\n        score_data: resultData,\n        command: shellCmd\n    }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        4320
+      ],
+      "id": "ef328ae6-33d2-4060-91e8-86caffc2e88f",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 62e195c6-a6eb-4cbb-8001-ecba6e9d5ddf"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.requestBody }}",
+        "options": {
+          "timeout": 1000000
+        }
+      },
+      "name": "风格识别器",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        4288
+      ],
+      "id": "2c97d6b3-2b1d-47f9-819f-4df1fcf75d37",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "name": "等待 3 秒",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        4112
+      ],
+      "id": "35e05120-ee42-4b30-822b-940b260aa844",
+      "webhookId": "a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d"
+    },
+    {
+      "parameters": {
+        "url": "http://172.18.0.1:9000/api/progress",
+        "options": {}
+      },
+      "name": "获取最新进度",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -704,
+        4112
+      ],
+      "id": "9142d0d1-f2f7-4c5c-ac4e-ebbccf30a555"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ Object.values($json).every(w => w.stage === 'completed' || w.stage === 'error' || w.stage === 'cancelled') }}",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "name": "任务是否结束?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        4112
+      ],
+      "id": "d1e3f7df-5a70-4971-a0e3-8a635fec7731"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://172.18.0.1:9000/api/scrape/async",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "name": "启动异步爬取1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -1168,
+        4112
+      ],
+      "id": "8b73bb0c-4725-496c-9b8c-c2136434b5ad"
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseParams = $('设置参数').first().json;\nconst workers = baseParams.workers || 1;\nconst perWorkerPins = Math.ceil(baseParams.max_pins / workers);\n\nconst workerTasks = [];\nfor (let i = 0; i < workers; i++) {\n  const isPrimary = (i === 0);\n  const workerPins = (i === workers - 1) \n    ? baseParams.max_pins - perWorkerPins * (workers - 1) \n    : perWorkerPins;\n  \n  workerTasks.push({\n    json: {\n      query: baseParams.query,\n      max_pins: workerPins,\n      min_saves: baseParams.min_saves,\n      min_comments: baseParams.min_comments,\n      media_type: baseParams.media_type,\n      download_images: baseParams.download_images,\n      climb_mode: baseParams.climb_mode,\n      use_folder_structure: baseParams.use_folder_structure,\n      chrome_port: baseParams.chrome_port + i,\n      chrome_headless: isPrimary ? baseParams.chrome_headless : false,\n      debug: baseParams.debug,\n      worker_id: `worker-${i}`,\n      chrome_profile: isPrimary ? '' : `worker_${i}`,\n      enable_ai_filter: true,\n      site: 'pinterest',\n      _worker_index: i,\n      _total_workers: workers\n    }\n  });\n}\n\nreturn workerTasks;"
+      },
+      "name": "生成Worker任务",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1264,
+        4112
+      ],
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1064,
+        4112
+      ],
+      "id": "b1c2d3e4-f5a6-7890-bcde-f12345678901",
+      "name": "Worker批次"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = JSON.parse($input.first().json.data_userId.data.content).cardPrivateData.params\n\nconst workers = input.workers || 1;\n\nreturn [{ json: {\n  query: input.query || '现代简约',\n  max_pins: input.count || 10,\n  min_saves: input.save || 50,\n  min_comments: input.min_comments || 0,\n  media_type: input.media_type || 'images',\n  download_images: input.download_images !== true,\n  climb_mode: input.climb_mode || false,\n  use_folder_structure: input.use_folder_structure || false,\n  chrome_port: input.chrome_port || 9222,\n  chrome_headless: input.chrome_headless !== true,\n  debug: input.debug || false,\n  workers: workers\n}}];"
+      },
+      "name": "设置参数",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        4112
+      ],
+      "id": "2807c39f-6bc5-477e-9761-4b2928b46d27"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allProgress = $input.first().json;\nlet output = '=== 全部Worker结果 ===\\n';\nlet totalCollected = 0;\nconst rawResults = {};\n\nfor (const [wid, progress] of Object.entries(allProgress)) {\n  const stage = progress.stage || 'unknown';\n  const collected = progress.collected_count || 0;\n  totalCollected += collected;\n  output += `[${wid}] 状态: ${stage === 'completed' ? '✅成功' : stage === 'error' ? '❌失败' : stage}\\n`;\n  output += `[${wid}] 收集: ${collected} 个\\n`;\n  if (progress.output_dir) output += `[${wid}] 目录: ${progress.output_dir}\\n`;\n  rawResults[wid] = progress;\n}\n\noutput += `\\n📊 总计收集: ${totalCollected} 个\\n`;\n\nreturn [{ json: { text: output, raw: rawResults, total_collected: totalCollected } }];"
+      },
+      "name": "格式化结果1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        4096
+      ],
+      "id": "5434686a-d3a7-44e5-9b05-5b24b8befd85"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawResults = $input.first().json.raw;\nconst imageItems = [];\n\nfor (const [wid, progress] of Object.entries(rawResults)) {\n  const outputDir = progress.output_dir;\n  if (!outputDir) continue;\n  const dirPart = outputDir.split('\\\\')[1] || outputDir.split('/')[1] || '';\n  imageItems.push({\n    json: {\n      worker_id: wid,\n      output_dir: outputDir,\n      dir_part: dirPart,\n      collected_count: progress.collected_count || 0\n    }\n  });\n}\n\nif (imageItems.length === 0) {\n  imageItems.push({ json: { worker_id: 'none', output_dir: '', dir_part: '', collected_count: 0 } });\n}\n\nreturn imageItems;"
+      },
+      "name": "收集Worker目录",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        4096
+      ],
+      "id": "c1d2e3f4-a5b6-7890-cdef-123456789012"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/pin_images/{{ $json.dir_part }}/images/*",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        4096
+      ],
+      "id": "5ddce163-c18b-42b1-856d-2ea88b1112a3",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        768,
+        4096
+      ],
+      "id": "27ff3b43-0580-496b-9fbd-3c5ec0a05291",
+      "name": "Loop Over Items4"
+    },
+    {
+      "parameters": {
+        "receiverId": "={{ $json.userid }}",
+        "messageContent": "={{ $json }}"
+      },
+      "type": "CUSTOM.dingTalkSendMessage",
+      "typeVersion": 1,
+      "position": [
+        256,
+        3840
+      ],
+      "id": "583a0d59-e6be-44c6-91ef-0073ff00b4d4",
+      "name": "DingTalk Send Message",
+      "credentials": {
+        "dingTalkStreamApi": {
+          "id": "P23yfHlZzRLcKran",
+          "name": "DingTalk Stream account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "data_userId",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "f021a492-838d-4fa6-a867-420e7ff80e00",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1568,
+        4112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "080de0ac-742f-4bae-b758-1a6369d5853e",
+              "name": "userid",
+              "value": "={{ $json.data_userId.data.userId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        3808
+      ],
+      "id": "194354a6-e9d8-4d98-957b-924e9b1a001c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -16,
+        3872
+      ],
+      "id": "b12a3c00-d1f6-4af8-9a80-fc1d7ccfc369",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "设置参数",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "设置参数": {
+      "main": [
+        [
+          {
+            "node": "生成Worker任务",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "生成Worker任务": {
+      "main": [
+        [
+          {
+            "node": "Worker批次",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Worker批次": {
+      "main": [
+        [
+          {
+            "node": "启动异步爬取1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "等待 3 秒",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "启动异步爬取1": {
+      "main": [
+        [
+          {
+            "node": "Worker批次",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "等待 3 秒": {
+      "main": [
+        [
+          {
+            "node": "获取最新进度",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "获取最新进度": {
+      "main": [
+        [
+          {
+            "node": "任务是否结束?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "任务是否结束?": {
+      "main": [
+        [
+          {
+            "node": "格式化结果1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "等待 3 秒",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化结果1": {
+      "main": [
+        [
+          {
+            "node": "收集Worker目录",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "收集Worker目录": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "风格识别器",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "风格识别器": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        [
+          {
+            "node": "Ollama兜底-调用API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama兜底-调用API": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "DingTalk Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "08df5352-ff10-457a-947d-441631a38c35",
+  "meta": {
+    "instanceId": "9349bf9e475aa9122eb3d3fc45a11885a7f43532cb587d05f7247f29f6c27700"
+  },
+  "id": "NQ20oGccwHHQgXlA",
+  "tags": []
+}

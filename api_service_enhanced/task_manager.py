@@ -36,69 +36,57 @@ def get_base_path():
 
 
 class TaskManager:
-    """任务执行管理器"""
+    """任务执行管理器（支持多Worker并行）"""
 
     def __init__(
         self, chrome_manager: ChromeManager, progress_tracker: ProgressTracker
     ):
         self.chrome_manager = chrome_manager
         self.progress_tracker = progress_tracker
-        self.current_task: Optional[subprocess.Popen] = None
+        self._tasks: Dict[str, subprocess.Popen] = {}
+        self._output_dirs: Dict[str, str] = {}
         self.lock = threading.Lock()
-        self._current_output_dir: str = ""  # 当前任务的输出目录
 
     def run_scrape(self, params: Dict) -> Dict:
         """执行爬虫任务
 
         Args:
             params: 任务参数
-                - query: 搜索关键词
-                - max_pins: 最大数量
-                - min_saves: 最小保存数
-                - min_comments: 最小评论数
-                - min_comments: 最小评论数
-                - output_dir: 输出目录
-                - chrome_port: Chrome端口
-                - chrome_profile: Chrome配置目录
-                - chrome_headless: 是否无头模式
-                - debug: 是否调试模式
 
         Returns:
             执行结果
         """
-        with self.lock:
-            if self.current_task and self.current_task.poll() is None:
-                return {"success": False, "error": "Another task is already running"}
+        worker_id = params.get("worker_id", "worker-0")
 
-        # 启动Chrome（如果未启动）
-        # 多 Worker 模式下，根据 worker_id 计算端口号（worker-0→9222, worker-1→9223, ...）
+        with self.lock:
+            if worker_id in self._tasks and self._tasks[worker_id].poll() is None:
+                return {"success": False, "error": f"Worker {worker_id} is already running"}
+
         chrome_port = params.get("chrome_port", 9222)
-        worker_id = params.get("worker_id", "")
         if worker_id and not params.get("chrome_port"):
-            # 从 worker_id 提取序号，如 "worker-2" → 9224
             try:
                 w_idx = int(worker_id.rsplit("-", 1)[-1])
                 chrome_port = 9222 + w_idx
             except (ValueError, IndexError):
-                pass  # 无法解析则用默认 9222
+                pass
 
-        endpoint = self.chrome_manager.get_endpoint()
+        endpoint = self.chrome_manager.get_endpoint(worker_id=worker_id)
         if not endpoint:
             try:
-                print("[TaskManager] Chrome未启动，正在启动...")
+                print(f"[TaskManager][{worker_id}] Chrome未启动，正在启动...")
                 endpoint = self.chrome_manager.start_chrome(
                     port=chrome_port,
                     profile=params.get("chrome_profile", ""),
                     headless=params.get("chrome_headless", False),
                     proxy_server=params.get("proxy_server"),
+                    worker_id=worker_id,
                 )
-                print(f"[TaskManager] Chrome已启动: {endpoint}")
+                print(f"[TaskManager][{worker_id}] Chrome已启动: {endpoint}")
             except Exception as e:
                 error_msg = f"Chrome启动失败: {str(e)}"
-                print(f"[TaskManager] {error_msg}")
+                print(f"[TaskManager][{worker_id}] {error_msg}")
                 return {"success": False, "error": error_msg}
 
-        # 生成带时间戳的子目录
         from datetime import datetime
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -110,31 +98,28 @@ class TaskManager:
         base_output = params.get("output_dir", "./output")
         full_output_dir = str(Path(base_output) / task_subdir)
 
-        # 保存到实例变量，供 _build_command 使用
-        self._current_output_dir = full_output_dir
+        with self.lock:
+            self._output_dirs[worker_id] = full_output_dir
 
-        # 更新进度（包含 output_dir）
         self.progress_tracker.start_task(
-            params["query"], params.get("max_pins", 100), full_output_dir
+            params["query"], params.get("max_pins", 100), full_output_dir,
+            worker_id=worker_id,
         )
         print(
-            f"[TaskManager] 开始任务: {params['query']}, output_dir: {full_output_dir}"
+            f"[TaskManager][{worker_id}] 开始任务: {params['query']}, output_dir: {full_output_dir}"
         )
 
-        # 创建进度文件路径（与ProgressTracker使用相同路径）
-        progress_file = Path(os.getenv("TEMP", ".")) / "pinterest_scraper_progress.json"
+        progress_file = self.progress_tracker._get_progress_file(worker_id)
 
-        # 构建环境变量
         env = os.environ.copy()
         env["PROGRESS_FILE"] = str(progress_file)
 
-        # 执行爬虫
-        cmd = self._build_command(params, endpoint)
-        print(f"[TaskManager] 执行命令: {' '.join(cmd)}")
+        cmd = self._build_command(params, endpoint, worker_id)
+        print(f"[TaskManager][{worker_id}] 执行命令: {' '.join(cmd)}")
 
         try:
             with self.lock:
-                self.current_task = subprocess.Popen(
+                self._tasks[worker_id] = subprocess.Popen(
                     cmd,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
@@ -143,53 +128,49 @@ class TaskManager:
                 )
         except Exception as e:
             error_msg = f"启动任务失败: {str(e)}"
-            print(f"[TaskManager] {error_msg}")
-            self.progress_tracker.error(error_msg)
+            print(f"[TaskManager][{worker_id}] {error_msg}")
+            self.progress_tracker.error(error_msg, worker_id=worker_id)
             return {"success": False, "error": error_msg}
 
-        # 等待完成
-        print("[TaskManager] 等待爬虫进程完成...")
+        print(f"[TaskManager][{worker_id}] 等待爬虫进程完成...")
         try:
-            stdout, stderr = self.current_task.communicate(timeout=600)
-            return_code = self.current_task.returncode
+            stdout, stderr = self._tasks[worker_id].communicate(timeout=600)
+            return_code = self._tasks[worker_id].returncode
 
-            print(f"[TaskManager] 进程结束，返回码: {return_code}")
-            print(f"[TaskManager] ===== STDOUT =====")
+            print(f"[TaskManager][{worker_id}] 进程结束，返回码: {return_code}")
+            print(f"[TaskManager][{worker_id}] ===== STDOUT =====")
             print(stdout)
-            print(f"[TaskManager] ===== STDERR =====")
+            print(f"[TaskManager][{worker_id}] ===== STDERR =====")
             print(stderr)
-            print(f"[TaskManager] ==================")
+            print(f"[TaskManager][{worker_id}] ==================")
 
             if return_code == 0:
-                # 图片下载（如果启用）
                 downloaded_count = 0
+                downloaded = None
+                pins = []
                 if params.get("download_images", True):
                     try:
-                        output_dir = Path(
-                            self._current_output_dir
-                            or params.get("output_dir", "./output")
-                        )
-                        # 优先使用达标数据文件
+                        with self.lock:
+                            output_dir = Path(
+                                self._output_dirs.get(worker_id, params.get("output_dir", "./output"))
+                            )
                         qualified_file = output_dir / "qualified_pins.json"
                         data_file = output_dir / "data.json"
 
                         if qualified_file.exists():
                             pins = load_pins_from_json(qualified_file)
-                            print(f"[TaskManager] 使用达标数据: {len(pins)} 个pins")
+                            print(f"[TaskManager][{worker_id}] 使用达标数据: {len(pins)} 个pins")
                         else:
                             pins = load_pins_from_json(data_file)
-                            print(f"[TaskManager] 使用全部数据: {len(pins)} 个pins")
+                            print(f"[TaskManager][{worker_id}] 使用全部数据: {len(pins)} 个pins")
 
                         if pins:
-                            print(f"[TaskManager] 开始下载 {len(pins)} 张图片...")
-                            # 更新已收集数量
-                            self.progress_tracker.update_collected(len(pins))
-                            # 动态导入 downloader 避免循环依赖
+                            print(f"[TaskManager][{worker_id}] 开始下载 {len(pins)} 张图片...")
+                            self.progress_tracker.update_collected(len(pins), worker_id=worker_id)
                             sys.path.insert(0, str(get_base_path()))
                             from downloader import ImageDownloader
                             from shared.models import Pin
 
-                            # 获取查询词用于文件命名
                             query = params.get("query", "")
                             use_folder = params.get("use_folder_structure", False)
 
@@ -200,7 +181,6 @@ class TaskManager:
                             )
                             pin_objects = [Pin(**p) for p in pins]
 
-                            # 纯爬坡模式不过滤，下载所有
                             if params.get("climb_mode"):
                                 downloaded = downloader.filter_and_download(
                                     pin_objects,
@@ -215,13 +195,13 @@ class TaskManager:
                                 )
                             downloaded_count = len(downloaded)
                             print(
-                                f"[TaskManager] ✓ 图片下载完成: {downloaded_count}/{len(pins)} 张"
+                                f"[TaskManager][{worker_id}] ✓ 图片下载完成: {downloaded_count}/{len(pins)} 张"
                             )
                     except Exception as e:
-                        print(f"[TaskManager] 图片下载失败: {e}")
+                        print(f"[TaskManager][{worker_id}] 图片下载失败: {e}")
 
-                self.progress_tracker.complete()
-                print("[TaskManager] ✓ 任务成功完成")
+                self.progress_tracker.complete(worker_id=worker_id)
+                print(f"[TaskManager][{worker_id}] ✓ 任务成功完成")
                 total_pins = len(pins) if pins else 0
                 return {
                     "success": True,
@@ -230,96 +210,98 @@ class TaskManager:
                     "downloaded_images": downloaded_count,
                     "collected_count": total_pins,
                     "filtered_count": len(downloaded) if downloaded else 0,
+                    "worker_id": worker_id,
                 }
             else:
                 error_msg = stderr[:2000] if stderr else "未知错误"
-                print(f"[TaskManager] ✗ 任务失败: {error_msg}")
-                self.progress_tracker.error(error_msg)
+                print(f"[TaskManager][{worker_id}] ✗ 任务失败: {error_msg}")
+                self.progress_tracker.error(error_msg, worker_id=worker_id)
                 return {
                     "success": False,
                     "error": error_msg,
                     "return_code": return_code,
+                    "worker_id": worker_id,
                 }
 
         except subprocess.TimeoutExpired:
-            print("[TaskManager] ✗ 任务超时")
-            self.current_task.kill()
-            self.current_task.wait()
-            self.progress_tracker.error("任务超时")
-            return {"success": False, "error": "Task timeout after 600s"}
+            print(f"[TaskManager][{worker_id}] ✗ 任务超时")
+            self._tasks[worker_id].kill()
+            self._tasks[worker_id].wait()
+            self.progress_tracker.error("任务超时", worker_id=worker_id)
+            return {"success": False, "error": "Task timeout after 600s", "worker_id": worker_id}
 
         except Exception as e:
             error_msg = str(e)
-            print(f"[TaskManager] ✗ 任务异常: {error_msg}")
-            self.progress_tracker.error(error_msg)
-            return {"success": False, "error": error_msg}
+            print(f"[TaskManager][{worker_id}] ✗ 任务异常: {error_msg}")
+            self.progress_tracker.error(error_msg, worker_id=worker_id)
+            return {"success": False, "error": error_msg, "worker_id": worker_id}
 
         finally:
             with self.lock:
-                self.current_task = None
-                self._current_output_dir = ""  # 清理输出目录
-            print("[TaskManager] 任务清理完成")
+                self._tasks.pop(worker_id, None)
+                self._output_dirs.pop(worker_id, None)
+            print(f"[TaskManager][{worker_id}] 任务清理完成")
 
-    def cancel_current(self):
-        """取消当前任务并清理相关进程"""
+    def cancel_current(self, worker_id: str = None):
+        """取消任务并清理相关进程
+
+        Args:
+            worker_id: 指定Worker ID取消，None则取消所有
+        """
         import psutil
 
         with self.lock:
-            if self.current_task and self.current_task.poll() is None:
-                # 获取进程ID
-                pid = self.current_task.pid
-                print(f"[TaskManager] 正在终止任务进程 (PID: {pid})...")
+            target_ids = [worker_id] if worker_id else list(self._tasks.keys())
+            for wid in target_ids:
+                task = self._tasks.get(wid)
+                if task and task.poll() is None:
+                    pid = task.pid
+                    print(f"[TaskManager][{wid}] 正在终止任务进程 (PID: {pid})...")
 
-                try:
-                    # 使用psutil终止整个进程树
-                    parent = psutil.Process(pid)
-                    children = parent.children(recursive=True)
-
-                    # 先终止子进程
-                    for child in children:
-                        try:
-                            child.terminate()
-                        except:
-                            pass
-
-                    # 等待子进程结束
-                    gone, alive = psutil.wait_procs(children, timeout=3)
-                    for child in alive:
-                        try:
-                            child.kill()
-                        except:
-                            pass
-
-                    # 终止主进程
-                    parent.terminate()
-                    parent.wait(timeout=3)
-
-                except psutil.NoSuchProcess:
-                    pass
-                except Exception as e:
-                    print(f"[TaskManager] 终止进程树失败: {e}")
-                    # 备用方案：强制kill
                     try:
-                        self.current_task.kill()
-                        self.current_task.wait()
-                    except:
+                        parent = psutil.Process(pid)
+                        children = parent.children(recursive=True)
+
+                        for child in children:
+                            try:
+                                child.terminate()
+                            except:
+                                pass
+
+                        gone, alive = psutil.wait_procs(children, timeout=3)
+                        for child in alive:
+                            try:
+                                child.kill()
+                            except:
+                                pass
+
+                        parent.terminate()
+                        parent.wait(timeout=3)
+
+                    except psutil.NoSuchProcess:
                         pass
+                    except Exception as e:
+                        print(f"[TaskManager][{wid}] 终止进程树失败: {e}")
+                        try:
+                            task.kill()
+                            task.wait()
+                        except:
+                            pass
 
-                self.current_task = None
-                print("[TaskManager] 任务进程已终止")
+                    self._tasks.pop(wid, None)
+                    print(f"[TaskManager][{wid}] 任务进程已终止")
 
-            self.progress_tracker.cancel()
+            self.progress_tracker.cancel(worker_id=worker_id)
 
-        # 停止Chrome
-        if self.chrome_manager:
+        if not worker_id and self.chrome_manager:
             try:
-                print("[TaskManager] 正在停止Chrome...")
-                self.chrome_manager.stop_chrome()
-                print("[TaskManager] Chrome已停止")
+                print("[TaskManager] 正在停止所有Chrome...")
+                self.chrome_manager.stop_all()
+                print("[TaskManager] 所有Chrome已停止")
             except Exception as e:
                 print(f"[TaskManager] Chrome停止失败: {e}")
 
-    def _build_command(self, params: Dict, endpoint: str) -> list:
+    def _build_command(self, params: Dict, endpoint: str, worker_id: str = "worker-0") -> list:
         """构建命令行
 
         Args:
@@ -348,7 +330,7 @@ class TaskManager:
                 "--min-saves", str(params.get("min_saves", 0)),
                 "--min-comments", str(params.get("min_comments", 0)),
                 "--output",
-                self._current_output_dir or params.get("output_dir", "./output"),
+                self._output_dirs.get(worker_id) or params.get("output_dir", "./output"),
                 "--connect",
                 "--cdp-endpoint", endpoint,
             ]
@@ -388,7 +370,7 @@ class TaskManager:
                 "--min-saves", str(params.get("min_saves", 0)),
                 "--min-comments", str(params.get("min_comments", 0)),
                 "--output",
-                self._current_output_dir or params.get("output_dir", "./output"),
+                self._output_dirs.get(worker_id) or params.get("output_dir", "./output"),
                 "--connect", "--cdp-endpoint", endpoint,
             ]
 

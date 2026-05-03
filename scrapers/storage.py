@@ -89,6 +89,9 @@ class ProjectStorage:
         proj = self._data["projects"].get(record_name.strip())
         return proj is not None and proj.get("status") == "completed"
 
+    def exists(self, record_name: str) -> bool:
+        return record_name.strip() in self._data["projects"]
+
     def is_pending(self, record_name: str) -> bool:
         proj = self._data["projects"].get(record_name.strip())
         return proj is None or proj.get("status") == "pending"

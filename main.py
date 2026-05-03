@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Pinterest 搜索爬虫 - CLI 入口"""
+"""Pinterest 搜索爬虫 - CLI 入口
+
+支持两种运行模式:
+  1. 传统模式 (默认): 直接调用 scraper.py 中的 PinterestScraper
+  2. 插件模式 (--use-plugin): 通过 core.engine 调度插件化架构
+"""
 
 import argparse
 import time
@@ -210,6 +215,12 @@ def parse_args():
         help="Chrome 代理服务器地址，如 socks5://proxy.example.com:1080",
     )
 
+    parser.add_argument(
+        "--use-plugin",
+        action="store_true",
+        help="使用插件化架构运行（新架构，core.engine 调度）",
+    )
+
     return parser.parse_args()
 
 
@@ -284,10 +295,69 @@ def run_tianjin_pipeline(args):
     return 0
 
 
+def run_with_plugin(args):
+    """使用插件化架构运行"""
+    from core.engine import ScraperEngine, discover_plugins
+
+    discover_plugins()
+
+    engine = ScraperEngine()
+
+    plugin_name = args.site
+    task_config = {}
+
+    if plugin_name == "pinterest":
+        if not args.query:
+            print("错误: Pinterest 模式必须提供 -q/--query 参数")
+            return 1
+        task_config = {
+            "query": args.query,
+            "max_pins": args.max_pins,
+            "min_saves": args.min_saves,
+            "climb_mode": args.climb_mode,
+            "output_dir": args.output,
+        }
+    elif plugin_name == "tianjin":
+        task_config = {
+            "days_limit": args.days_limit,
+            "max_gov_pages": args.max_gov_pages,
+            "max_projects": args.max_projects,
+            "sources": args.sources,
+        }
+
+    plugin_kwargs = {
+        "headless": not args.no_headless,
+        "debug": args.debug,
+        "cdp_endpoint": args.cdp_endpoint if args.connect else None,
+        "worker_id": args.worker_id,
+    }
+
+    try:
+        engine.create_plugin(plugin_name, **plugin_kwargs)
+        result = engine.run_task(plugin_name, task_config, progress_callback=update_progress)
+
+        if result.status.value == "completed":
+            print(f"[插件模式] 任务完成: 收集 {result.total_collected} 条")
+            if result.output_dir:
+                print(f"[插件模式] 输出目录: {result.output_dir}")
+            return 0
+        else:
+            print(f"[插件模式] 任务失败: {result.error}")
+            return 1
+    except Exception as e:
+        print(f"[插件模式] 异常: {e}")
+        return 1
+    finally:
+        engine.shutdown()
+
+
 def main():
     """主函数"""
     print("[main.py] 开始执行...")
     args = parse_args()
+
+    if args.use_plugin:
+        return run_with_plugin(args)
 
     if args.site == "tianjin":
         return run_tianjin_pipeline(args)

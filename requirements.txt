@@ -6,6 +6,8 @@ httpx>=0.25.0
 
 # Playwright for scraping
 playwright>=1.40.0
+greenlet>=3.0.0
+pyee>=11.0.0
 
 # Async HTTP client
 aiohttp>=3.9.0
@@ -32,3 +34,9 @@ pyinstaller>=6.3.0
 captcha-recognizer>=1.0.0
 opencv-python>=4.8.0
 numpy>=1.23.0
+
+# AI clients (used by shared/ AI modules)
+openai>=1.0.0
+
+# Redis (optional, for distributed mode)
+redis>=5.0.0

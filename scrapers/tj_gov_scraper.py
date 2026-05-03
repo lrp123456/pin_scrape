@@ -123,6 +123,7 @@ class TJGovScraper:
 
         all_projects = []
         page_num = 1
+        stopped_by_storage = False
 
         while page_num <= max_pages:
             print(f"[住建委] 正在处理第 {page_num} 页...")
@@ -131,15 +132,26 @@ class TJGovScraper:
             print(f"[住建委] 第 {page_num} 页提取到 {len(projects)} 条记录")
 
             residential = [p for p in projects if "非住宅" not in p.usage and "住宅" in p.usage]
-            all_projects.extend(residential)
 
             if self.storage and residential:
-                all_completed = all(
-                    self.storage.is_completed(p.clean_name) for p in residential
-                )
-                if all_completed:
-                    print(f"[住建委] 第 {page_num} 页所有 {len(residential)} 个项目均已提取过，提前终止")
+                new_projects_on_page = []
+                for p in residential:
+                    if self.storage.exists(p.clean_name):
+                        print(f"[住建委] 项目 '{p.clean_name}' 已存在于 storage，停止后续爬取")
+                        stopped_by_storage = True
+                        break
+                    new_projects_on_page.append(p)
+                
+                all_projects.extend(new_projects_on_page)
+                
+                if stopped_by_storage:
+                    print(f"[住建委] 第 {page_num} 页遇到已存在项目，提前终止所有后续爬取")
                     break
+            else:
+                all_projects.extend(residential)
+
+            if stopped_by_storage:
+                break
 
             has_next = self._goto_next_page()
             if not has_next:
@@ -227,8 +239,8 @@ class TJGovScraper:
         
         try:
             if self.debug:
-                debug_dir = Path("debug_tj_gov")
-                debug_dir.mkdir(exist_ok=True)
+                debug_dir = Path("logs/debug/tj_gov")
+                debug_dir.mkdir(parents=True, exist_ok=True)
                 try:
                     self.page.screenshot(path=str(debug_dir / "page.png"), full_page=True, timeout=5000)
                 except Exception:
@@ -393,6 +405,7 @@ class TJGovScraper:
 
         规则：
         - 删除"号楼"及其前面的数字和分隔符
+        - 删除"X及配建X"模式（如"1、2及配建一、3及配建二、4及配建三"）
         - 删除尾部数字（备案名不能以数字结尾）
         - 删除末尾标点
 
@@ -401,6 +414,7 @@ class TJGovScraper:
         - "春风雅筑3号楼、4号楼" → "春风雅筑"
         - "紫棠星苑8、10、18号楼" → "紫棠星苑"
         - "格调林泉西苑1、4、5、8号楼" → "格调林泉西苑"
+        - "潼锦苑1、2及配建一、3及配建二、4及配建三" → "潼锦苑"
         - "龙韵花园9" → "龙韵花园"
         - "海棠园" → "海棠园"
         """
@@ -414,10 +428,14 @@ class TJGovScraper:
             prefix = cleaned.split('号楼')[0]
             cleaned = re.sub(r'[\d、,，\-]+$', '', prefix).strip()
 
-        # 步骤2：删除尾部纯数字（备案名不能以数字结尾）
+        # 步骤2：删除"X及配建X"模式
+        # 匹配：数字+及配建+中文数字，前面可能有数字和顿号
+        cleaned = re.sub(r'[\d、]*\d+及配建[一二三四五六七八九十]+', '', cleaned).strip()
+
+        # 步骤3：删除尾部纯数字（备案名不能以数字结尾）
         cleaned = re.sub(r'\d+$', '', cleaned).strip()
 
-        # 步骤3：删除末尾的标点
+        # 步骤4：删除末尾的标点
         cleaned = re.sub(r'[、,，\s]+$', '', cleaned).strip()
 
         if not cleaned:

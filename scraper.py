@@ -15,6 +15,14 @@ from playwright.sync_api import Browser, BrowserContext, Page, sync_playwright
 
 from shared.models import Pin
 
+try:
+    from shared.cookie_manager import CookieManager
+    _cookie_manager_available = True
+    COOKIES_DIR = Path(__file__).parent / "cookiesFile"
+except ImportError:
+    _cookie_manager_available = False
+    COOKIES_DIR = None
+
 # AI 筛选模块（可选，如果配置启用）
 try:
     from shared.ai_filter_manager import AIFilterManager
@@ -130,11 +138,14 @@ class PinterestScraper:
         self.worker_id = worker_id
         self.proxy_server = proxy_server
         self._ai_available = False
-        self._coordinator: Optional["ScrapeCoordinator"] = None  # 多 Worker 协调器
-        self._async_ai: Optional["AsyncAIWorker"] = None  # 异步 AI 工作池
-        self._search_page_url: Optional[str] = None  # 搜索页精确 URL，用于返回兜底
-        self._search_image_map: dict = {}  # 搜索页 pin_id → image_url 映射（一次提取，多次使用）
+        self._coordinator: Optional["ScrapeCoordinator"] = None
+        self._async_ai: Optional["AsyncAIWorker"] = None
+        self._search_page_url: Optional[str] = None
+        self._search_image_map: dict = {}
+        self._cookie_manager: Optional["CookieManager"] = None
+        self._cookie_account_id: Optional[int] = None
         self._setup_logger()
+        self._init_cookie_manager()
         self._init_ai_filter()
 
     def __enter__(self):
@@ -404,6 +415,33 @@ class PinterestScraper:
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
 
+    def _init_cookie_manager(self):
+        """初始化 Cookie 管理器，为当前 Worker 分配账号"""
+        if not _cookie_manager_available:
+            self.logger.warning("[Cookie] CookieManager 模块不可用，使用传统模式")
+            return
+
+        try:
+            self._cookie_manager = CookieManager()
+            account = self._cookie_manager.get_account_for_worker(self.worker_id)
+            if account:
+                self._cookie_account_id = account["id"]
+                status_label = {1: "有效", 0: "失效", -1: "待登录"}.get(account["status"], "未知")
+                self.logger.info(
+                    f"[Cookie] Worker {self.worker_id} 分配到账号 #{account['id']} "
+                    f"(标签={account['label']}, 状态={status_label})"
+                )
+            else:
+                new_id = self._cookie_manager.add_account(label=f"auto_{self.worker_id}")
+                self._cookie_account_id = new_id
+                self._cookie_manager.get_account_for_worker(self.worker_id)
+                self.logger.info(
+                    f"[Cookie] Worker {self.worker_id} 无可用账号，已创建待登录账号 #{new_id}"
+                )
+        except Exception as e:
+            self.logger.warning(f"[Cookie] CookieManager 初始化失败: {e}")
+            self._cookie_manager = None
+
     def _init_ai_filter(self):
         """初始化 AI 筛选模块"""
         if not self.enable_ai_filter:
@@ -468,8 +506,30 @@ class PinterestScraper:
                 self.page.set_viewport_size({"width": 1920, "height": 1080})
                 self.logger.info(f"已设置视口大小: 1920x1080")
 
+                # CDP 连接模式下注入 Cookie
+                if self._cookie_manager and self._cookie_account_id:
+                    state = self._cookie_manager.load_storage_state(self._cookie_account_id)
+                    if state and state.get("cookies"):
+                        self._inject_cookies_to_context(state)
+                        self.logger.info(
+                            f"[Cookie] CDP模式：已注入 {len(state.get('cookies', []))} 个 cookie"
+                        )
+                    else:
+                        self.logger.info("[Cookie] CDP模式：数据库中无有效 cookie")
+
                 apply_stealth(self.page)
                 self.logger.info("已启用 stealth 模式 (连接模式)")
+
+                # CDP 模式下，注入 Cookie 后导航到 Pinterest 首页以触发 Cookie 生效
+                self.logger.info("[Cookie] 导航到 Pinterest 首页以激活 Cookie...")
+                self.page.goto("https://www.pinterest.com/", timeout=30000)
+                time.sleep(2)
+
+                # 检查登录状态
+                if self._check_login_required():
+                    self.logger.warning("[Cookie] Cookie 无效，需要重新登录")
+                else:
+                    self.logger.info("[Cookie] Cookie 有效，已成功登录")
 
             except Exception as e:
                 self.logger.error(f"连接失败: {e}")
@@ -479,17 +539,40 @@ class PinterestScraper:
         else:
             # 启动新的浏览器
             self._own_browser = True
-            self.browser = self._playwright.chromium.launch(
-                headless=self.headless,
-                args=["--disable-blink-features=AutomationControlled"],
-            )
-            self.context = self.browser.new_context(
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                viewport={"width": 1920, "height": 1080},
-            )
+
+            # 尝试从 CookieManager 加载 storage_state
+            storage_state_path = None
+            if self._cookie_manager and self._cookie_account_id:
+                state = self._cookie_manager.load_storage_state(self._cookie_account_id)
+                if state and state.get("cookies"):
+                    state_file = Path(self._cookie_manager.get_all_accounts()[0]["full_path"]).parent / f"_worker_{self.worker_id}_state.json"
+                    state_file.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+                    storage_state_path = str(state_file)
+                    self.logger.info(f"[Cookie] 已加载 storage_state，包含 {len(state.get('cookies', []))} 个 cookie")
+                else:
+                    self.logger.info("[Cookie] 数据库中无有效 cookie，将使用空状态启动")
+
+            if storage_state_path:
+                self.browser = self._playwright.chromium.launch(
+                    headless=self.headless,
+                    args=["--disable-blink-features=AutomationControlled"],
+                )
+                self.context = self.browser.new_context(
+                    storage_state=storage_state_path,
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    viewport={"width": 1920, "height": 1080},
+                )
+            else:
+                self.browser = self._playwright.chromium.launch(
+                    headless=self.headless,
+                    args=["--disable-blink-features=AutomationControlled"],
+                )
+                self.context = self.browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    viewport={"width": 1920, "height": 1080},
+                )
             self.page = self.context.new_page()
 
-            # 应用 stealth 模式隐藏自动化特征
             apply_stealth(self.page)
             self.logger.info("已启用 stealth 模式")
 
@@ -507,6 +590,9 @@ class PinterestScraper:
 
     def close(self):
         """关闭浏览器，安全处理各组件（任一失败不影响其他组件的清理）"""
+        # 保存当前浏览器的 storage_state 到数据库
+        self._save_cookie_state()
+
         if self._own_browser:
             # 只关闭自己启动的浏览器（含恢复后自动启动的浏览器）
             try:
@@ -653,159 +739,256 @@ class PinterestScraper:
             return self._scroll_and_collect(max_pins)
 
     def _check_login_required(self):
-        """检测是否需要登录，如果需要则启动可见浏览器让用户登录"""
+        """检测是否需要登录，如果需要则启动可见浏览器让用户登录
+
+        流程：
+        1. 检测当前页面是否需要登录
+        2. 如果需要登录，弹出可见浏览器等待用户登录
+        3. 登录成功后，保存 storage_state 到数据库
+        4. 将 cookie 注入到当前浏览器上下文
+        """
         try:
-            # 检测登录墙或登录按钮
             login_required = self.page.evaluate("""
                 () => {
-                    // 检测登录模态框
                     const loginModal = document.querySelector('[data-test-id="login-modal"]');
                     const signupButton = document.querySelector('[data-test-id="signup-button"]');
                     const loginButton = document.querySelector('[data-test-id="login-button"]');
-
-                    // 检测是否重定向到登录页
                     const isLoginPage = window.location.pathname.includes('/login');
-
-                    // 检测是否有大量登录提示
-                    const loginPrompts = document.querySelectorAll('[data-test-id*="login"], [data-test-id*="signup"]');
-
+                    const isSignupPage = window.location.pathname.includes('/signup');
+                    const hasSearchResults = document.querySelectorAll('[data-test-id="pin"]').length > 0
+                        || document.querySelectorAll('div[data-grid-item]').length > 0
+                        || document.querySelectorAll('div[data-test-id="homefeed-feed"]').length > 0;
+                    const hasLoginWall = document.querySelector('[data-test-id="unauth-bottom-login-button"]') !== null
+                        || document.querySelector('div[data-test-id="login-modal"]') !== null
+                        || document.querySelector('button[data-test-id="signup-button"]') !== null;
+                    const pageBody = document.body ? document.body.innerText : '';
+                    const hasLoginText = pageBody.includes('Log in to') || pageBody.includes('登录以')
+                        || pageBody.includes('Sign up to') || pageBody.includes('注册以');
                     return {
                         hasModal: !!loginModal,
                         hasButtons: !!(signupButton || loginButton),
-                        isLoginPage: isLoginPage,
-                        promptCount: loginPrompts.length,
-                        requiresLogin: !!(loginModal || signupButton || loginButton || isLoginPage)
+                        isLoginPage: isLoginPage || isSignupPage,
+                        hasSearchResults: hasSearchResults,
+                        hasLoginWall: hasLoginWall,
+                        hasLoginText: hasLoginText,
+                        requiresLogin: (isLoginPage || isSignupPage || hasLoginWall || (hasLoginText && !hasSearchResults)) && !hasSearchResults
                     };
                 }
             """)
 
             if login_required["requiresLogin"]:
+                is_primary = self.worker_id == "worker-0" or not self.worker_id
+                if not is_primary:
+                    print(f"\n[Worker {self.worker_id}] 需要登录Pinterest")
                 self._launch_visible_chrome_for_login()
+                return
+
+            if not login_required.get("hasSearchResults", True):
+                time.sleep(3)
+                still_no_results = self.page.evaluate("""
+                    () => {
+                        return document.querySelectorAll('[data-test-id="pin"]').length === 0
+                            && document.querySelectorAll('div[data-grid-item]').length === 0
+                            && document.querySelectorAll('div[data-test-id="homefeed-feed"]').length === 0;
+                    }
+                """)
+                if still_no_results:
+                    current_url = self.page.url
+                    self.logger.warning(f"[登录检测] 搜索页无任何结果，可能需要登录 (URL: {current_url})")
+                    self._launch_visible_chrome_for_login()
 
         except Exception as e:
             if self.debug:
                 print(f"登录检测出错: {e}")
 
     def _launch_visible_chrome_for_login(self):
+        """启动可见浏览器让用户登录，登录成功后保存 storage_state 到数据库
+
+        借鉴 social-auto-upload-main 的认证模式：
+        - 使用 Playwright 启动可见浏览器
+        - 监听 URL 变化检测登录成功
+        - 登录成功后调用 context.storage_state() 保存完整浏览器状态
+        - 将 storage_state 写入数据库，供后续 Worker 复用
         """
-        启动可见的 Chrome 浏览器让用户登录。
-        使用与连接模式相同的 user_data_dir，确保登录状态持久化。
-        """
+        worker_label = f" [Worker {self.worker_id}]" if self.worker_id and self.worker_id != "worker-0" else ""
         print("\n" + "=" * 60)
-        print("⚠️  检测到需要 Pinterest 登录")
+        print(f"⚠️  检测到需要 Pinterest 登录{worker_label}")
         print("=" * 60)
-        print("\n正在启动可见浏览器让您登录...")
-        print(f"使用配置目录: {self.user_data_dir}")
+        print(f"\n正在启动可见浏览器让您登录{worker_label}...")
         print("\n请在新打开的浏览器窗口中登录 Pinterest")
         print("登录完成后，程序将自动继续...")
         print("\n提示：")
         print("  1. 使用邮箱/密码登录")
         print("  2. 或使用Google/Facebook账号登录")
-        print("  3. 登录成功后会自动保存登录状态")
+        print("  3. 登录成功后会自动保存到数据库，其他Worker可复用")
         print("=" * 60 + "\n")
 
-        import subprocess
-        from pathlib import Path
+        login_browser = None
+        login_context = None
+        login_page = None
 
-        # 导入 ChromeLauncher 获取 find_chrome_executable
-        from chrome_launcher import find_chrome_executable
-
-        chrome_path = find_chrome_executable()
-        port = 9223  # 使用不同端口避免冲突
-
-        cmd = [
-            chrome_path,
-            f"--remote-debugging-port={port}",
-            "--remote-debugging-address=127.0.0.1",
-            f"--user-data-dir={self.user_data_dir}",
-            "--no-first-run",
-            "--no-default-browser-check",
-            "--disable-default-apps",
-            "--disable-translate",
-            "--disable-extensions",
-            "--disable-sync",
-            "--no-sandbox",
-            "https://pinterest.com/login",
-        ]
-
-        # 非无头模式，不使用 DETACHED_PROCESS，让窗口可见
-        creation_flags = 0
-        popen_kwargs = {"creationflags": creation_flags} if subprocess.sys.platform == "win32" else {}
-
-        process = subprocess.Popen(cmd, **popen_kwargs)
-        print(f"已启动登录浏览器 (PID: {process.pid})")
-
-        # 等待 CDP 端点就绪
-        import requests
-        url = f"http://localhost:{port}/json/version"
-        max_wait = 60  # 60秒超时
-        for _ in range(max_wait * 2):
-            try:
-                response = requests.get(url, timeout=1)
-                if response.status_code == 200:
-                    break
-            except requests.exceptions.RequestException:
-                pass
-            import time
-            time.sleep(0.5)
-        else:
-            print("警告: 等待 Chrome 启动超时")
-
-        # 等待用户登录（最长等待5分钟）
-        print("等待登录中...")
-        max_wait = 300
-        wait_interval = 5
-        waited = 0
-
-        while waited < max_wait:
-            import time
-            time.sleep(wait_interval)
-            waited += wait_interval
-
-            # 检查登录状态
-            try:
-                still_requires_login = self.page.evaluate("""
-                    () => {
-                        const loginModal = document.querySelector('[data-test-id="login-modal"]');
-                        const signupButton = document.querySelector('[data-test-id="signup-button"]');
-                        const loginButton = document.querySelector('[data-test-id="login-button"]');
-                        const isLoginPage = window.location.pathname.includes('/login');
-                        return !!(loginModal || signupButton || loginButton || isLoginPage);
-                    }
-                """)
-
-                if not still_requires_login:
-                    print("\n✓ 登录成功！正在关闭登录浏览器...")
-                    print("登录状态已保存，下次运行将自动使用。")
-
-                    # 关闭登录浏览器
-                    try:
-                        process.terminate()
-                        process.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        process.kill()
-
-                    return
-
-                # 每30秒提示一次
-                if waited % 30 == 0:
-                    print(f"  仍在等待登录... ({waited}秒)")
-
-            except Exception as e:
-                if self.debug:
-                    print(f"检查登录状态出错: {e}")
-
-        # 超时
-        print("登录等待超时，正在关闭登录浏览器...")
         try:
-            process.terminate()
-            process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            process.kill()
+            login_browser = self._playwright.chromium.launch(
+                headless=False,
+                args=[
+                    "--disable-blink-features=AutomationControlled",
+                    "--no-sandbox",
+                    "--lang=zh-CN",
+                    "--start-maximized",
+                ],
+            )
 
-        raise RuntimeError(
-            f"登录等待超时（{max_wait}秒）。请重新运行程序并完成登录。"
-        )
+            login_context_kwargs = {
+                "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "viewport": {"width": 1280, "height": 900},
+            }
+
+            if self._cookie_manager and self._cookie_account_id:
+                existing_state = self._cookie_manager.load_storage_state(self._cookie_account_id)
+                if existing_state and existing_state.get("cookies"):
+                    temp_state = Path(COOKIES_DIR) / f"_login_temp_{self.worker_id}.json"
+                    temp_state.write_text(json.dumps(existing_state, ensure_ascii=False), encoding="utf-8")
+                    login_context_kwargs["storage_state"] = str(temp_state)
+                    print(f"[Cookie] 已加载已有Cookie ({len(existing_state.get('cookies', []))} 个)，尝试复用登录状态...")
+
+            login_context = login_browser.new_context(**login_context_kwargs)
+            login_page = login_context.new_page()
+            apply_stealth(login_page)
+
+            login_page.goto("https://www.pinterest.com/login/", timeout=60000)
+            original_url = login_page.url
+
+            print("等待登录中...")
+            max_wait = 300
+            wait_interval = 3
+            waited = 0
+
+            while waited < max_wait:
+                time.sleep(wait_interval)
+                waited += wait_interval
+
+                try:
+                    current_url = login_page.url
+                    still_needs_login = (
+                        "/login" in current_url
+                        or login_page.get_by_text("登录").count() > 0
+                        or login_page.get_by_text("Log in").count() > 0
+                    )
+
+                    if not still_needs_login and current_url != original_url:
+                        print(f"\n✓ 登录成功！当前页面: {current_url}")
+
+                        time.sleep(3)
+
+                        storage_state = login_context.storage_state()
+
+                        if self._cookie_manager and self._cookie_account_id:
+                            self._cookie_manager.update_storage_state(
+                                self._cookie_account_id, storage_state
+                            )
+                            print(f"[Cookie] storage_state 已保存到数据库 (账号 #{self._cookie_account_id})")
+                        else:
+                            print("[Cookie] CookieManager 不可用，storage_state 未持久化")
+
+                        self._inject_cookies_to_context(storage_state)
+
+                        try:
+                            self.page.reload(timeout=30000)
+                            time.sleep(3)
+                            print("[Cookie] 已将登录状态注入到爬虫浏览器")
+                        except Exception as reload_err:
+                            print(f"[Cookie] 刷新页面失败: {reload_err}")
+
+                        return
+
+                    if waited % 30 == 0:
+                        print(f"  仍在等待登录... ({waited}秒)")
+
+                except Exception as check_err:
+                    if self.debug:
+                        print(f"检查登录状态出错: {check_err}")
+
+            print("登录等待超时")
+            raise RuntimeError(f"登录等待超时（{max_wait}秒）。请重新运行程序并完成登录。")
+
+        finally:
+            try:
+                if login_page:
+                    login_page.close()
+            except Exception:
+                pass
+            try:
+                if login_context:
+                    login_context.close()
+            except Exception:
+                pass
+            try:
+                if login_browser:
+                    login_browser.close()
+            except Exception:
+                pass
+
+    def _inject_cookies_to_context(self, storage_state: dict):
+        """将 storage_state 中的 cookie 注入到当前浏览器上下文
+
+        Args:
+            storage_state: Playwright storage_state 字典
+        """
+        if not self.context or not storage_state:
+            return
+
+        try:
+            cookies = storage_state.get("cookies", [])
+            for cookie in cookies:
+                try:
+                    cookie_dict = {k: v for k, v in cookie.items() if v is not None}
+                    self.context.add_cookies([cookie_dict])
+                except Exception as e:
+                    if self.debug:
+                        print(f"[Cookie] 注入单个 cookie 失败: {e}")
+
+            origins = storage_state.get("origins", [])
+            if origins and self.page:
+                for origin in origins:
+                    local_storage = origin.get("localStorage", [])
+                    for item in local_storage:
+                        try:
+                            self.page.evaluate(
+                                f"localStorage.setItem('{item['name']}', '{item['value']}')"
+                            )
+                        except Exception:
+                            pass
+
+            print(f"[Cookie] 已注入 {len(cookies)} 个 cookie 到当前上下文")
+        except Exception as e:
+            print(f"[Cookie] cookie 注入失败: {e}")
+
+    def _save_cookie_state(self):
+        """保存当前浏览器上下文的 storage_state 到数据库"""
+        if not self._cookie_manager or not self._cookie_account_id:
+            return
+
+        if not self.context:
+            return
+
+        try:
+            storage_state = self.context.storage_state()
+            if storage_state and storage_state.get("cookies"):
+                self._cookie_manager.update_storage_state(
+                    self._cookie_account_id, storage_state
+                )
+                self.logger.info(
+                    f"[Cookie] 已保存当前 session 状态到数据库 (账号 #{self._cookie_account_id}, "
+                    f"{len(storage_state.get('cookies', []))} 个 cookie)"
+                )
+        except Exception as e:
+            if self.debug:
+                self.logger.debug(f"[Cookie] 保存 session 状态失败: {e}")
+
+        try:
+            self._cookie_manager.release_worker(self.worker_id)
+        except Exception:
+            pass
 
     def _ensure_and_click_pin(self, clicked_pins, keyword):
         visible_pins = self._get_visible_pin_elements(self.media_type)
@@ -990,7 +1173,7 @@ class PinterestScraper:
         visited_ids = set()  # 已访问过的pin（防止重复点击）
         collected_pin_ids = set()  # 已收集的pin ID（防止重复收集）
         max_attempts = max(target_count * 10, 50)  # 给足够的尝试次数
-        max_depth = 15  # 爬坡最大深度
+        max_depth = 9999  # 爬坡最大深度（无限制，仅靠saves无法提升时自然终止）
         attempt = 0
         max_search_scroll_rounds = 10  # 搜索页最大滚动轮数，避免无限滚动
         search_scroll_round = 0  # 当前搜索页滚动轮数
@@ -1305,6 +1488,7 @@ class PinterestScraper:
                 current_saves = 0
                 depth = 0
                 found_qualified = False
+                pending_collect = []
 
                 while depth < max_depth:
                     self.logger.debug(
@@ -1335,7 +1519,12 @@ class PinterestScraper:
                         return list(collected_pins.values())
 
                     # 双重去重检查：内存已访问 + Redis已收集
-                    if current_pin_id in visited_ids and not found_qualified:
+                    # 爬坡升级的pin可能已在visited_ids中，此时应继续作为跳板而非中断
+                    if current_pin_id in visited_ids and depth > 1:
+                        self.logger.debug(
+                            f"pin {current_pin_id} 已访问过，作为跳板继续爬坡"
+                        )
+                    elif current_pin_id in visited_ids and not found_qualified:
                         self.logger.warning(
                             f"pin {current_pin_id} 已访问过（内存），跳过"
                         )
@@ -1396,7 +1585,6 @@ class PinterestScraper:
                     )
 
                     if saves >= min_saves and media_match:
-                        # 已收集过的 pin 不重复收集，但作为跳板继续爬坡
                         if already_collected:
                             self.logger.info(
                                 f"[深度{depth}] 该 pin 已在其他上下文中收集，跳过收集，继续爬坡"
@@ -1409,69 +1597,17 @@ class PinterestScraper:
                                 else ""
                             )
 
-                            # 收集阶段 AI 深度筛选
-                            if not self._apply_collection_ai_filter(current_pin_id, image_url):
-                                self.logger.info(
-                                    f"[深度{depth}] AI收集筛选未通过，跳过收集，但继续爬坡找更优"
-                                )
-                                # 不 continue，让流程继续到爬坡逻辑。
-                                # visited_ids 已经在上方添加（line 1287），防止搜索页重复选此入口
-
-                            pin = Pin(
-                                id=str(current_pin_id),
-                                title=details.get("title", ""),
-                                description=details.get("description", ""),
-                                image_url=image_url,
-                                image_url_736x=(
-                                    images.get("736x", {}).get("url", "")
-                                    if isinstance(images, dict)
-                                    else ""
-                                ),
-                                saves=saves,
-                                comments=details.get("comments", 0) or 0,
-                                link=f"https://kr.pinterest.com/pin/{current_pin_id}/",
-                                pinner=details.get("pinner", ""),
-                                source="explore_mode",
-                                is_video=is_video,
-                                video_url=details.get("video_url", ""),
-                            )
-                            collected_pins[current_pin_id] = pin
-                            qualified_count += 1
-                            found_qualified = True
-                            collected_pin_ids.add(current_pin_id)
-                            # 通知协调器：已收集此 pin（用于跨 Worker 去重）
-                            if self._coordinator:
-                                self._coordinator.mark_collected(
-                                    current_pin_id, saves=saves, title=details.get("title", "")
-                                )
+                            pending_collect.append({
+                                "pin_id": current_pin_id,
+                                "image_url": image_url,
+                                "sp_saves": saves,
+                                "sp_details": details,
+                                "sp_images": images,
+                                "sp_is_video": is_video,
+                            })
                             self.logger.info(
-                                f"[深度{depth}] ✓ 成功收集 pin {current_pin_id}！qualified_count: {qualified_count}/{target_count}"
+                                f"[深度{depth}] pin {current_pin_id} 达标(saves={saves})，加入批量收集池(当前{len(pending_collect)}张)"
                             )
-                            self.logger.info(
-                                f"📊 已收集 {qualified_count}/{target_count} 个"
-                            )
-                            print(
-                                f"  [深度{depth}] ✓ 成功收集！(Saves={saves}) 进度: {qualified_count}/{target_count}"
-                            )
-
-                            if qualified_count >= target_count:
-                                self.logger.info(
-                                    f"已达到目标数量: qualified_count({qualified_count}) >= target_count({target_count})"
-                                )
-                                print(
-                                    f"  [深度{depth}] 已收集{target_count}个，停止任务"
-                                )
-                                if self._coordinator:
-                                    self._coordinator.set_task_complete(qualified_count)
-                                # 用 try-except 包裹，确保即使返回失败也能返回结果
-                                try:
-                                    self._navigate_back_to_search(self._current_keyword)
-                                except Exception as e:
-                                    self.logger.warning(
-                                        f"返回搜索页出错，但继续返回: {e}"
-                                    )
-                                    print(f"  返回搜索页出错，但继续返回: {e}")
-                                return list(collected_pins.values())
 
                     self.logger.info(
                         f"[深度{depth}] 开始寻找更优跳板 (目标 Saves > {current_saves})..."
@@ -1544,7 +1680,6 @@ class PinterestScraper:
                             return list(collected_pins.values())
 
                         batch_checked = 0
-                        pending_collect = []  # 批量收集池：累积待 AI 评估的 pin
                         for sp in unvisited[:max_checks_before_scroll]:
                             if upgraded:
                                 break
@@ -1660,63 +1795,25 @@ class PinterestScraper:
                                         flush_result = self._flush_batch_collect_pool(
                                             pending_collect, self._current_keyword
                                         )
-                                        for item, result in flush_result["passed"]:
-                                            sp_image_736x = (
-                                                item["sp_images"].get("736x", {}).get("url", "")
-                                                if isinstance(item["sp_images"], dict)
-                                                else ""
-                                            )
-                                            similar_pin = Pin(
-                                                id=str(item["pin_id"]),
-                                                title=item["sp_details"].get("title", ""),
-                                                description=item["sp_details"].get("description", ""),
-                                                image_url=item["image_url"],
-                                                image_url_736x=sp_image_736x,
-                                                saves=item["sp_saves"],
-                                                comments=item["sp_details"].get("comments", 0) or 0,
-                                                link=f"https://kr.pinterest.com/pin/{item['pin_id']}/",
-                                                pinner=item["sp_details"].get("pinner", ""),
-                                                source="similar_from_climb",
-                                                is_video=item["sp_is_video"],
-                                                video_url=item["sp_details"].get("video_url", ""),
-                                            )
-                                            collected_pins[item["pin_id"]] = similar_pin
-                                            qualified_count += 1
-                                            collected_pin_ids.add(item["pin_id"])
-                                            # 通知协调器
+                                        q_delta, should_stop = self._apply_flush_result(
+                                            flush_result, collected_pins, collected_pin_ids,
+                                            visited_ids, target_count, source_label="爬坡批量"
+                                        )
+                                        qualified_count += q_delta
+                                        if q_delta > 0:
+                                            found_qualified = True
+                                            self.logger.info(f"  📊 已收集 {qualified_count}/{target_count} 个")
+                                            print(f"      [爬坡批量] 进度：{qualified_count}/{target_count}")
+                                        if should_stop:
+                                            self.logger.info(f"爬坡中已达到目标数量：{qualified_count}/{target_count}")
+                                            print(f"  已达到目标数量，停止任务")
                                             if self._coordinator:
-                                                self._coordinator.mark_collected(
-                                                    item["pin_id"],
-                                                    saves=item["sp_saves"],
-                                                    title=item["sp_details"].get("title", ""),
-                                                )
-                                            self.logger.info(
-                                                f"  [爬坡批量] 收集达标 pin: {item['pin_id']} (saves={item['sp_saves']})"
-                                            )
-                                            self.logger.info(
-                                                f"  📊 已收集 {qualified_count}/{target_count} 个"
-                                            )
-                                            print(
-                                                f"      [爬坡批量] 收集达标 pin: saves={item['sp_saves']}, 进度：{qualified_count}/{target_count}"
-                                            )
-
-                                            if qualified_count >= target_count:
-                                                self.logger.info(
-                                                    f"爬坡中已达到目标数量：{qualified_count}/{target_count}"
-                                                )
-                                                print(f"  已达到目标数量，停止任务")
-                                                if self._coordinator:
-                                                    self._coordinator.set_task_complete(qualified_count)
-                                                try:
-                                                    self._navigate_back_to_search(
-                                                        self._current_keyword
-                                                    )
-                                                except Exception as e:
-                                                    self.logger.warning(f"返回搜索页出错：{e}")
-                                                return list(collected_pins.values())
-
-                                        for failed_id in flush_result["failed"]:
-                                            visited_ids.add(failed_id)
+                                                self._coordinator.set_task_complete(qualified_count)
+                                            try:
+                                                self._navigate_back_to_search(self._current_keyword)
+                                            except Exception as e:
+                                                self.logger.warning(f"返回搜索页出错：{e}")
+                                            return list(collected_pins.values())
                                         pending_collect = []
 
                                 self.logger.debug(
@@ -1769,54 +1866,20 @@ class PinterestScraper:
                                         flush_result = self._flush_batch_collect_pool(
                                             pending_collect, self._current_keyword
                                         )
-                                        for item, result in flush_result["passed"]:
-                                            sp_image_736x = (
-                                                item["sp_images"].get("736x", {}).get("url", "")
-                                                if isinstance(item["sp_images"], dict)
-                                                else ""
-                                            )
-                                            similar_pin = Pin(
-                                                id=str(item["pin_id"]),
-                                                title=item["sp_details"].get("title", ""),
-                                                description=item["sp_details"].get("description", ""),
-                                                image_url=item["image_url"],
-                                                image_url_736x=sp_image_736x,
-                                                saves=item["sp_saves"],
-                                                comments=item["sp_details"].get("comments", 0) or 0,
-                                                link=f"https://kr.pinterest.com/pin/{item['pin_id']}/",
-                                                pinner=item["sp_details"].get("pinner", ""),
-                                                source="similar_from_climb",
-                                                is_video=item["sp_is_video"],
-                                                video_url=item["sp_details"].get("video_url", ""),
-                                            )
-                                            collected_pins[item["pin_id"]] = similar_pin
-                                            qualified_count += 1
-                                            collected_pin_ids.add(item["pin_id"])
-                                            # 通知协调器
+                                        q_delta, should_stop = self._apply_flush_result(
+                                            flush_result, collected_pins, collected_pin_ids,
+                                            visited_ids, target_count, source_label="爬坡批量"
+                                        )
+                                        qualified_count += q_delta
+                                        if q_delta > 0:
+                                            found_qualified = True
+                                            self.logger.info(f"  📊 已收集 {qualified_count}/{target_count} 个")
+                                            print(f"      [爬坡批量] 进度：{qualified_count}/{target_count}")
+                                        if should_stop:
+                                            self.logger.info(f"爬坡中已达到目标数量：{qualified_count}/{target_count}")
                                             if self._coordinator:
-                                                self._coordinator.mark_collected(
-                                                    item["pin_id"],
-                                                    saves=item["sp_saves"],
-                                                    title=item["sp_details"].get("title", ""),
-                                                )
-                                            self.logger.info(
-                                                f"  [爬坡批量] 收集达标 pin: {item['pin_id']} (saves={item['sp_saves']})"
-                                            )
-                                            self.logger.info(
-                                                f"  📊 已收集 {qualified_count}/{target_count} 个"
-                                            )
-                                            print(
-                                                f"      [爬坡批量] 收集达标 pin: saves={item['sp_saves']}, 进度：{qualified_count}/{target_count}"
-                                            )
-                                            if qualified_count >= target_count:
-                                                self.logger.info(
-                                                    f"爬坡中已达到目标数量：{qualified_count}/{target_count}"
-                                                )
-                                                if self._coordinator:
-                                                    self._coordinator.set_task_complete(qualified_count)
-                                                return list(collected_pins.values())
-                                        for failed_id in flush_result["failed"]:
-                                            visited_ids.add(failed_id)
+                                                self._coordinator.set_task_complete(qualified_count)
+                                            return list(collected_pins.values())
                                         pending_collect = []
 
                                     self.logger.info(
@@ -1855,54 +1918,21 @@ class PinterestScraper:
                             flush_result = self._flush_batch_collect_pool(
                                 pending_collect, self._current_keyword
                             )
-                            for item, result in flush_result["passed"]:
-                                sp_image_736x = (
-                                    item["sp_images"].get("736x", {}).get("url", "")
-                                    if isinstance(item["sp_images"], dict)
-                                    else ""
-                                )
-                                similar_pin = Pin(
-                                    id=str(item["pin_id"]),
-                                    title=item["sp_details"].get("title", ""),
-                                    description=item["sp_details"].get("description", ""),
-                                    image_url=item["image_url"],
-                                    image_url_736x=sp_image_736x,
-                                    saves=item["sp_saves"],
-                                    comments=item["sp_details"].get("comments", 0) or 0,
-                                    link=f"https://kr.pinterest.com/pin/{item['pin_id']}/",
-                                    pinner=item["sp_details"].get("pinner", ""),
-                                    source="similar_from_climb",
-                                    is_video=item["sp_is_video"],
-                                    video_url=item["sp_details"].get("video_url", ""),
-                                )
-                                collected_pins[item["pin_id"]] = similar_pin
-                                qualified_count += 1
-                                collected_pin_ids.add(item["pin_id"])
-                                # 通知协调器
+                            q_delta, should_stop = self._apply_flush_result(
+                                flush_result, collected_pins, collected_pin_ids,
+                                visited_ids, target_count, source_label="爬坡批量"
+                            )
+                            qualified_count += q_delta
+                            if q_delta > 0:
+                                found_qualified = True
+                                self.logger.info(f"  📊 已收集 {qualified_count}/{target_count} 个")
+                                print(f"      [爬坡批量] 进度：{qualified_count}/{target_count}")
+                            if should_stop:
+                                self.logger.info(f"爬坡中已达到目标数量：{qualified_count}/{target_count}")
                                 if self._coordinator:
-                                    self._coordinator.mark_collected(
-                                        item["pin_id"],
-                                        saves=item["sp_saves"],
-                                        title=item["sp_details"].get("title", ""),
-                                    )
-                                self.logger.info(
-                                    f"  [爬坡批量] 收集达标 pin: {item['pin_id']} (saves={item['sp_saves']})"
-                                )
-                                self.logger.info(
-                                    f"  📊 已收集 {qualified_count}/{target_count} 个"
-                                )
-                                print(
-                                    f"      [爬坡批量] 收集达标 pin: saves={item['sp_saves']}, 进度：{qualified_count}/{target_count}"
-                                )
-                                if qualified_count >= target_count:
-                                    self.logger.info(
-                                        f"爬坡中已达到目标数量：{qualified_count}/{target_count}"
-                                    )
-                                    if self._coordinator:
-                                        self._coordinator.set_task_complete(qualified_count)
-                                    return list(collected_pins.values())
-                            for failed_id in flush_result["failed"]:
-                                visited_ids.add(failed_id)
+                                    self._coordinator.set_task_complete(qualified_count)
+                                return list(collected_pins.values())
+                            pending_collect = []
 
                         self.logger.info(
                             f"[爬坡轮次{scroll_round}] 完成，已检查{batch_checked}个，upgraded={upgraded}"
@@ -1958,6 +1988,30 @@ class PinterestScraper:
                                 break
 
                     if not upgraded:
+                        # 爬坡终止前冲刷剩余批量收集池
+                        if pending_collect:
+                            self.logger.info(
+                                f"  [批量池] 爬坡终止前冲刷 {len(pending_collect)} 张"
+                            )
+                            flush_result = self._flush_batch_collect_pool(
+                                pending_collect, self._current_keyword
+                            )
+                            q_delta, should_stop = self._apply_flush_result(
+                                flush_result, collected_pins, collected_pin_ids,
+                                visited_ids, target_count, source_label="爬坡终止"
+                            )
+                            qualified_count += q_delta
+                            if q_delta > 0:
+                                found_qualified = True
+                                self.logger.info(f"  📊 已收集 {qualified_count}/{target_count} 个")
+                                print(f"      [爬坡终止] 进度：{qualified_count}/{target_count}")
+                            if should_stop:
+                                self.logger.info(f"爬坡终止时已达到目标数量：{qualified_count}/{target_count}")
+                                if self._coordinator:
+                                    self._coordinator.set_task_complete(qualified_count)
+                                return list(collected_pins.values())
+                            pending_collect = []
+
                         if scroll_round >= max_scroll_rounds:
                             print(
                                 f"  [深度{depth}] 已滚动{max_scroll_rounds}轮仍未找到更优跳板，已检查{checked_count}个推荐。返回搜索页更换起点。"
@@ -1969,12 +2023,43 @@ class PinterestScraper:
                         self._navigate_back_to_search(self._current_keyword)
                         break
 
+                # 内层循环结束后冲刷剩余批量收集池
+                if pending_collect:
+                    self.logger.info(
+                        f"  [批量池] 内层循环结束冲刷 {len(pending_collect)} 张"
+                    )
+                    flush_result = self._flush_batch_collect_pool(
+                        pending_collect, self._current_keyword
+                    )
+                    q_delta, should_stop = self._apply_flush_result(
+                        flush_result, collected_pins, collected_pin_ids,
+                        visited_ids, target_count, source_label="深度循环"
+                    )
+                    qualified_count += q_delta
+                    if q_delta > 0:
+                        found_qualified = True
+                        self.logger.info(f"  📊 已收集 {qualified_count}/{target_count} 个")
+                        print(f"      [深度循环] 进度：{qualified_count}/{target_count}")
+                    if should_stop:
+                        self.logger.info(f"深度循环结束时已达到目标数量：{qualified_count}/{target_count}")
+                        if self._coordinator:
+                            self._coordinator.set_task_complete(qualified_count)
+                        try:
+                            self._navigate_back_to_search(self._current_keyword)
+                        except Exception as e:
+                            self.logger.warning(f"返回搜索页出错：{e}")
+                        return list(collected_pins.values())
+                    pending_collect = []
+
                 if not found_qualified:
                     try:
                         self._close_pin_modal()
                         time.sleep(random.uniform(1, 2))
-                        self._navigate_back_to_search(self._current_keyword)
-                        time.sleep(random.uniform(2, 4))
+                        # 不再无条件返回搜索页
+                        # 如果是因为爬坡无法继续（upgraded=False）而退出内层循环，
+                        # _navigate_back_to_search 已在 not upgraded 分支中调用
+                        # 如果是因为其他原因退出（如已访问pin），页面可能仍在详情页，
+                        # 由外层循环的页面状态检查来处理
                     except Exception:
                         pass
 
@@ -2421,8 +2506,69 @@ class PinterestScraper:
             self.logger.warning(f"[AI收集筛选] 评估失败: {e}，默认通过")
             return True
 
+    def _apply_flush_result(
+        self, flush_result, collected_pins, collected_pin_ids, visited_ids, target_count, source_label="批量"
+    ):
+        """处理批量冲刷结果：将通过的pin加入收集集，失败的加入已访问集
+
+        Args:
+            flush_result: _flush_batch_collect_pool 的返回值
+            collected_pins: 已收集pin字典（可变，会被修改）
+            collected_pin_ids: 已收集pin ID集合（可变，会被修改）
+            visited_ids: 已访问ID集合（可变，会被修改）
+            target_count: 目标数量
+            source_label: 日志标签
+
+        Returns:
+            (qualified_delta, should_stop): 新增达标数量 / 是否达到目标应停止
+        """
+        qualified_delta = 0
+
+        for item, result in flush_result["passed"]:
+            sp_image_736x = (
+                item["sp_images"].get("736x", {}).get("url", "")
+                if isinstance(item["sp_images"], dict)
+                else ""
+            )
+            similar_pin = Pin(
+                id=str(item["pin_id"]),
+                title=item["sp_details"].get("title", ""),
+                description=item["sp_details"].get("description", ""),
+                image_url=item["image_url"],
+                image_url_736x=sp_image_736x,
+                saves=item["sp_saves"],
+                comments=item["sp_details"].get("comments", 0) or 0,
+                link=f"https://kr.pinterest.com/pin/{item['pin_id']}/",
+                pinner=item["sp_details"].get("pinner", ""),
+                source=source_label,
+                is_video=item["sp_is_video"],
+                video_url=item["sp_details"].get("video_url", ""),
+            )
+            collected_pins[item["pin_id"]] = similar_pin
+            qualified_delta += 1
+            collected_pin_ids.add(item["pin_id"])
+            if self._coordinator:
+                self._coordinator.mark_collected(
+                    item["pin_id"],
+                    saves=item["sp_saves"],
+                    title=item["sp_details"].get("title", ""),
+                )
+            self.logger.info(
+                f"  [{source_label}] 收集达标 pin: {item['pin_id']} (saves={item['sp_saves']})"
+            )
+
+        for failed_id in flush_result["failed"]:
+            visited_ids.add(failed_id)
+
+        total_qualified = len([p for p in collected_pins.values() if p.saves >= 0])
+        should_stop = total_qualified >= target_count if qualified_delta > 0 else False
+
+        return qualified_delta, should_stop
+
     def _flush_batch_collect_pool(self, pool: list, keyword: str) -> dict:
         """冲刷批量收集池 — 一次 API 调用评估多张图
+
+        已通过爬坡AI筛选的pin会从协调器缓存中获取结果，跳过重复评估。
 
         Args:
             pool: 待评估列表，每项为 {pin_id, image_url, sp_saves, sp_details, sp_images, sp_is_video}
@@ -2434,12 +2580,45 @@ class PinterestScraper:
         if not pool:
             return {"passed": [], "failed": []}
 
-        image_urls = [item["image_url"] for item in pool if item["image_url"]]
-        if not image_urls:
-            return {"passed": [], "failed": [item["pin_id"] for item in pool]}
+        passed = []
+        failed = []
+        need_eval = []  # 需要AI评估的项
 
+        for item in pool:
+            pin_id = item["pin_id"]
+            if not item["image_url"]:
+                failed.append(pin_id)
+                continue
+
+            cached_result = None
+            if self._coordinator:
+                cached_result = self._coordinator.get_filter_result(pin_id)
+
+            if cached_result is not None:
+                is_approved = cached_result.get("is_approved", False)
+                is_interior = cached_result.get("is_interior", True)
+                if is_approved and is_interior:
+                    self.logger.info(
+                        f"[批量收集] 🔄 缓存命中✅: {pin_id[:12]}... → 直接通过"
+                    )
+                    passed.append((item, cached_result))
+                else:
+                    self.logger.info(
+                        f"[批量收集] 🔄 缓存命中❌: {pin_id[:12]}... → {cached_result.get('reasoning', '')}"
+                    )
+                    failed.append(pin_id)
+            else:
+                need_eval.append(item)
+
+        if not need_eval:
+            self.logger.info(
+                f"[批量收集] 全部{len(pool)}张已有缓存结果，无需AI评估 (通过{len(passed)}/未通过{len(failed)})"
+            )
+            return {"passed": passed, "failed": failed}
+
+        image_urls = [item["image_url"] for item in need_eval]
         self.logger.info(
-            f"[批量收集] 开始评估 {len(image_urls)} 张 (池中共 {len(pool)} 张)"
+            f"[批量收集] 开始评估 {len(image_urls)} 张 (缓存命中{len(pool) - len(need_eval)}张，共{len(pool)}张)"
         )
 
         try:
@@ -2448,29 +2627,33 @@ class PinterestScraper:
             )
         except Exception as e:
             self.logger.warning(f"[批量收集] 批量评估异常: {e}，全部跳过")
-            return {"passed": [], "failed": [item["pin_id"] for item in pool]}
+            failed.extend(item["pin_id"] for item in need_eval)
+            return {"passed": passed, "failed": failed}
 
-        passed = []
-        failed = []
         for result in results:
             idx = result.get("index", -1)
-            if idx < 0 or idx >= len(pool):
+            if idx < 0 or idx >= len(need_eval):
                 continue
-            item = pool[idx]
+            item = need_eval[idx]
             if result.get("is_approved"):
-                # 额外检查 is_interior（兜底）
                 if result.get("is_interior", True):
                     passed.append((item, result))
+                    if self._coordinator:
+                        self._coordinator.set_filter_result(item["pin_id"], result)
                 else:
                     self.logger.info(
                         f"[批量收集] ❌ {item['pin_id'][:12]}... 非室内: {result.get('reasoning', '')}"
                     )
                     failed.append(item["pin_id"])
+                    if self._coordinator:
+                        self._coordinator.set_filter_result(item["pin_id"], result)
             else:
                 self.logger.info(
                     f"[批量收集] ❌ {item['pin_id'][:12]}...: {result.get('reasoning', '')}"
                 )
                 failed.append(item["pin_id"])
+                if self._coordinator:
+                    self._coordinator.set_filter_result(item["pin_id"], result)
 
         self.logger.info(
             f"[批量收集] ✅ 完成: {len(passed)} 通过 / {len(failed)} 未通过"

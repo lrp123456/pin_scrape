@@ -13,7 +13,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from api_service_enhanced.progress_tracker import ProgressTracker
 from api_service_enhanced.chrome_manager import ChromeManager
 from api_service_enhanced.task_manager import TaskManager
-from api_service_enhanced.routes import status, scrape, config, stop
+from api_service_enhanced.routes import status, scrape, config, stop, cookies
+from api_service_enhanced.routes import plugin as plugin_routes
 
 # 全局实例
 chrome_manager = None
@@ -35,6 +36,14 @@ async def lifespan(app: FastAPI):
     status.progress_tracker = progress_tracker
     scrape.task_manager = task_manager
     stop.task_manager = task_manager
+
+    # 初始化 CookieManager
+    try:
+        from shared.cookie_manager import CookieManager
+        cookies.cookie_manager = CookieManager()
+        print("[Cookie] CookieManager 已初始化")
+    except Exception as e:
+        print(f"[Cookie] CookieManager 初始化失败: {e}")
 
     # 注册关闭信号
     signal.signal(signal.SIGTERM, handle_shutdown)
@@ -79,6 +88,8 @@ app.include_router(scrape.router, prefix="/api", tags=["爬虫"])
 app.include_router(status.router, prefix="/api", tags=["状态"])
 app.include_router(config.router, prefix="/api", tags=["配置"])
 app.include_router(stop.router, prefix="/api", tags=["控制"])
+app.include_router(cookies.router, prefix="/api", tags=["Cookie"])
+app.include_router(plugin_routes.router, prefix="/api", tags=["插件"])
 
 
 # 根路径
@@ -96,6 +107,9 @@ async def root():
             "status": "/api/status",
             "config": "/api/config",
             "health": "/api/health",
+            "cookies": "/api/cookies",
+            "plugins": "/api/plugins",
+            "plugin_scrape": "/api/plugins/scrape",
         },
     }
 
